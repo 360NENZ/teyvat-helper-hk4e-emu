@@ -36,11 +36,11 @@ const (
 	IKCP_ASK_SEND    = 1  // need to send IKCP_CMD_WASK
 	IKCP_ASK_TELL    = 2  // need to send IKCP_CMD_WINS
 	IKCP_WND_SND     = 32
-	IKCP_WND_RCV     = 32
+	IKCP_WND_RCV     = 256
 	IKCP_MTU_DEF     = 1400
 	IKCP_ACK_FAST    = 3
 	IKCP_INTERVAL    = 100
-	IKCP_OVERHEAD    = 24
+	IKCP_OVERHEAD    = 28
 	IKCP_DEADLINK    = 20
 	IKCP_THRESH_INIT = 2
 	IKCP_THRESH_MIN  = 2
@@ -119,6 +119,7 @@ func _itimediff(later, earlier uint32) int32 {
 // segment defines a KCP segment
 type segment struct {
 	conv     uint32
+	token    uint32
 	cmd      uint8
 	frg      uint8
 	wnd      uint16
@@ -136,6 +137,7 @@ type segment struct {
 // encode a segment into buffer
 func (seg *segment) encode(ptr []byte) []byte {
 	ptr = ikcp_encode32u(ptr, seg.conv)
+	ptr = ikcp_encode32u(ptr, seg.token)
 	ptr = ikcp_encode8u(ptr, seg.cmd)
 	ptr = ikcp_encode8u(ptr, seg.frg)
 	ptr = ikcp_encode16u(ptr, seg.wnd)
@@ -149,7 +151,7 @@ func (seg *segment) encode(ptr []byte) []byte {
 
 // KCP defines a single KCP connection
 type KCP struct {
-	conv, mtu, mss, state                  uint32
+	conv, token, mtu, mss, state           uint32
 	snd_una, snd_nxt, rcv_nxt              uint32
 	ssthresh                               uint32
 	rx_rttvar, rx_srtt                     int32
@@ -203,6 +205,8 @@ func NewKCP(conv uint32, output output_callback) *KCP {
 	kcp.output = output
 	return kcp
 }
+
+func (kcp *KCP) SetToken(token uint32) { kcp.token = token }
 
 // newSegment creates a KCP segment
 func (kcp *KCP) newSegment(size int) (seg segment) {
@@ -556,7 +560,7 @@ func (kcp *KCP) Input(data []byte, regular, ackNoDelay bool) int {
 	var windowSlides bool
 
 	for {
-		var ts, sn, length, una, conv uint32
+		var ts, sn, length, una, conv, token uint32
 		var wnd uint16
 		var cmd, frg uint8
 
@@ -567,6 +571,11 @@ func (kcp *KCP) Input(data []byte, regular, ackNoDelay bool) int {
 		data = ikcp_decode32u(data, &conv)
 		if conv != kcp.conv {
 			return -1
+		}
+
+		data = ikcp_decode32u(data, &token)
+		if token != kcp.token {
+			return -4
 		}
 
 		data = ikcp_decode8u(data, &cmd)
@@ -606,6 +615,7 @@ func (kcp *KCP) Input(data []byte, regular, ackNoDelay bool) int {
 				if _itimediff(sn, kcp.rcv_nxt) >= 0 {
 					var seg segment
 					seg.conv = conv
+					seg.token = token
 					seg.cmd = cmd
 					seg.frg = frg
 					seg.wnd = wnd
