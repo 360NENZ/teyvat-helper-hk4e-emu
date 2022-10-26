@@ -7,6 +7,7 @@ import (
 )
 
 func (l *KCPConn) handleDataPacket(addr *net.UDPAddr, buf []byte) error {
+	// log.Printf("[net.KCPConn] Handle data packet: %s\n%s", addr.String(), hex.Dump(buf))
 	id := binary.LittleEndian.Uint32(buf[:4])
 	token := binary.LittleEndian.Uint32(buf[4:8])
 	session, err := l.getSession(addr, id, token)
@@ -18,6 +19,7 @@ func (l *KCPConn) handleDataPacket(addr *net.UDPAddr, buf []byte) error {
 }
 
 func (l *KCPConn) sendDataPacket(addr *net.UDPAddr, buf []byte) (err error) {
+	// log.Printf("[net.KCPConn] Send data packet: %s\n%s", addr.String(), hex.Dump(buf))
 	_, err = l.conn.WriteToUDP(buf, addr)
 	return err
 }

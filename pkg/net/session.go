@@ -25,7 +25,7 @@ func newSession(addr *net.UDPAddr, id uint32) *Session {
 	}
 	session.kcp = NewKCP(id, session.output)
 	session.kcp.SetMtu(1200)
-	session.kcp.NoDelay(1, 10, 1, 1)
+	session.kcp.NoDelay(1, 10, 2, 1)
 	return session
 }
 
@@ -34,6 +34,8 @@ func (s *Session) output(buf []byte, size int) {
 		log.Println("[net.Session] Failed to send session packet, error:", err)
 	}
 }
+
+func (s *Session) ID() uint32 { return s.id }
 
 func (s *Session) SetToken(token uint32) {
 	s.token = token

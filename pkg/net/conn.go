@@ -26,13 +26,15 @@ type KCPConn struct {
 func newKCPConn(conn *net.UDPConn) *KCPConn {
 	l := &KCPConn{
 		conn:     conn,
-		rand:     rand.New(rand.NewSource(time.Hour.Microseconds())),
+		rand:     rand.New(rand.NewSource(time.Now().UnixNano())),
 		sessions: make(map[uint32]*Session),
 		packetCh: make(chan *Packet, 1024),
 	}
 	go l.start()
 	return l
 }
+
+func (l *KCPConn) Packet() chan *Packet { return l.packetCh }
 
 func (l *KCPConn) start() {
 	buf := make([]byte, mtuLimit)
@@ -120,7 +122,7 @@ func (l *KCPConn) getSession(addr net.Addr, id, token uint32) (*Session, error) 
 	if session.token != token {
 		return nil, ErrSessionTokenMismatch
 	}
-	log.Printf("[net.KCPConn] Get session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
+	// log.Printf("[net.KCPConn] Get session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
 	return session, nil
 }
 

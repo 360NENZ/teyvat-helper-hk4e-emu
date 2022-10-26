@@ -36,6 +36,7 @@ func (l *KCPConn) handleCtrlConnectPsh(addr *net.UDPAddr, buf []byte) error {
 	if data := binary.BigEndian.Uint32(buf[12:16]); data != 0x499602D2 {
 		return fmt.Errorf("invalid connect psh data: %d", data)
 	}
+	conv := binary.BigEndian.Uint32(buf[4:8])
 	token := binary.BigEndian.Uint32(buf[8:12])
 	if token == 0 {
 		token = l.nextSessionToken()
@@ -43,7 +44,7 @@ func (l *KCPConn) handleCtrlConnectPsh(addr *net.UDPAddr, buf []byte) error {
 	session, err := l.createSession(addr, token)
 	if err != nil {
 		log.Println("[net.KCPConn] Failed to create session, error:", err)
-		return l.sendCtrlDisconnect(addr, session.id, session.token, 5) // ENET_SERVER_KICK
+		return l.sendCtrlDisconnect(addr, conv, token, 5) // ENET_SERVER_KICK
 	}
 	return l.sendCtrlConnectAck(addr, session.id, session.token)
 }
@@ -82,11 +83,11 @@ func (l *KCPConn) handleCtrlDisconnect(addr *net.UDPAddr, buf []byte) error {
 	if err != nil {
 		log.Println("[net.KCPConn] Failed to delete session, error:", err)
 		if err == ErrSessionNotFound {
-			return l.sendCtrlDisconnect(addr, session.id, session.token, 7) // ENET_NOT_FOUND_SESSION
+			return l.sendCtrlDisconnect(addr, conv, token, 7) // ENET_NOT_FOUND_SESSION
 		} else if err == ErrSessionTokenMismatch {
-			return l.sendCtrlDisconnect(addr, session.id, session.token, 5) // ENET_SERVER_KICK
+			return l.sendCtrlDisconnect(addr, conv, token, 5) // ENET_SERVER_KICK
 		} else {
-			return l.sendCtrlDisconnect(addr, session.id, session.token, 5) // ENET_SERVER_KICK
+			return l.sendCtrlDisconnect(addr, conv, token, 5) // ENET_SERVER_KICK
 		}
 	}
 	return l.sendCtrlDisconnect(addr, session.id, session.token, 4) // ENET_SERVER_RELOGIN

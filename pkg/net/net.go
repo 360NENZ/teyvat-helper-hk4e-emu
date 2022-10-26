@@ -1,6 +1,7 @@
 package net
 
 import (
+	"net"
 	"sync"
 )
 
@@ -18,3 +19,14 @@ func newPacket(sess *Session) *Packet {
 }
 
 func (p *Packet) Release() { bufPool.Put(p.data) }
+
+func (p *Packet) Session() *Session { return p.sess }
+func (p *Packet) Payload() []byte   { return p.data }
+
+func Listen(addr string) (*KCPConn, error) {
+	udpAddr, err := net.ResolveUDPAddr("udp", addr)
+	if err != nil {
+		return nil, err
+	}
+	return ListenKCP("udp", udpAddr)
+}
