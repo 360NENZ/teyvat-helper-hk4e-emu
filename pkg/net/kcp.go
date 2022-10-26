@@ -701,6 +701,7 @@ func (kcp *KCP) wnd_unused() uint16 {
 func (kcp *KCP) flush(ackOnly bool) uint32 {
 	var seg segment
 	seg.conv = kcp.conv
+	seg.token = kcp.token
 	seg.cmd = IKCP_CMD_ACK
 	seg.wnd = kcp.wnd_unused()
 	seg.una = kcp.rcv_nxt
@@ -795,6 +796,7 @@ func (kcp *KCP) flush(ackOnly bool) uint32 {
 		}
 		newseg := kcp.snd_queue[k]
 		newseg.conv = kcp.conv
+		newseg.token = kcp.token
 		newseg.cmd = IKCP_CMD_PUSH
 		newseg.sn = kcp.snd_nxt
 		kcp.snd_buf = append(kcp.snd_buf, newseg)
