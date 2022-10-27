@@ -1,8 +1,8 @@
 package game
 
 import (
-	"github.com/teyvat-helper/hk4e-emu/pkg/pb"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 type Player struct {

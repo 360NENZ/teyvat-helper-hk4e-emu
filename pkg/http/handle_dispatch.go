@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/teyvat-helper/hk4e-emu/pkg/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 

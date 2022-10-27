@@ -6,6 +6,7 @@ require (
 	github.com/aj3423/aproto v0.0.0-20221015122707-91b1011be03e
 	github.com/gin-gonic/gin v1.8.1
 	github.com/spf13/viper v1.13.0
+	github.com/teyvat-helper/hk4e-proto v0.0.0-20221027035201-4b339a563703
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.8
 	github.com/uptrace/bun/driver/sqliteshim v1.1.8

@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/teyvat-helper/hk4e-emu/pkg/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 // send PlayerEnterSceneNotify

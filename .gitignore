@@ -2,6 +2,8 @@
 .vscode/
 
 bin/
+*.work
+*.work.sum
 *.yaml
 
 # Binaries for programs and plugins

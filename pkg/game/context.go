@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/aj3423/aproto"
-	"github.com/teyvat-helper/hk4e-emu/pkg/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -62,17 +62,26 @@ func (s *Server) Context(packet *Packet) *Context {
 	if packet.message != nil {
 		var v any
 		if packet.message.ProtoMessageType() == "UnionCmdNotify" {
+			failed := false
 			notify := UnionCmdNotify{}
 			for _, cmd := range packet.message.(*pb.UnionCmdNotify).CmdList {
-				command := pb.ProtoCommand(cmd.GetMessageId())
+				id := pb.ProtoCommand(cmd.GetMessageId())
 				item := UnionCmd{
-					MessageID: command,
-					Body:      pb.ProtoCommandNewFuncMap.New(command),
+					MessageID: id,
+					Body:      pb.ProtoCommandNewFuncMap.New(id),
 				}
-				_ = proto.Unmarshal(cmd.GetBody(), item.Body)
-				notify.CmdList = append(notify.CmdList, &item)
+				if item.Body != nil {
+					_ = proto.Unmarshal(cmd.GetBody(), item.Body)
+					notify.CmdList = append(notify.CmdList, &item)
+				} else {
+					failed = true
+				}
 			}
-			v = notify
+			if !failed {
+				v = notify
+			} else {
+				v = packet.message
+			}
 		} else {
 			v = packet.message
 		}

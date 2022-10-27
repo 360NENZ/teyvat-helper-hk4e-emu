@@ -8,7 +8,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/teyvat-helper/hk4e-emu/pkg/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 // HandleGetPlayerTokenReq handle GetPlayerTokenReq

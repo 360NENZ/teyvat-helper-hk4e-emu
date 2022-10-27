@@ -1,6 +1,6 @@
 package game
 
-import "github.com/teyvat-helper/hk4e-emu/pkg/pb"
+import "github.com/teyvat-helper/hk4e-proto/pb"
 
 func (s *Server) HandleGmTalkReq(ctx *Context, req *pb.GmTalkReq) error {
 	panic("not implement")
