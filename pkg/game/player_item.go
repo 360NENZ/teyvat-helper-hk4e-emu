@@ -20,5 +20,15 @@ func (p *PlayerItem) AddItem(id uint32) (*pb.ItemBin, error) {
 		IsLocked: false,
 		Detail:   &pb.EquipBin_Weapon{Weapon: &pb.WeaponBin{Level: 1}},
 	}}
+	packStore := p.GetPackStore()
+	if packStore == nil {
+		packStore = &pb.ItemStoreBin{}
+		p.PackStore = packStore
+	}
+	itemList := packStore.GetItemList()
+	if itemList == nil {
+		itemList = []*pb.ItemBin{}
+	}
+	packStore.ItemList = append(itemList, &item)
 	return &item, nil
 }

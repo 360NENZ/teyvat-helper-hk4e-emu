@@ -80,7 +80,7 @@ func (l *KCPConn) createSession(addr *net.UDPAddr, token uint32) (*Session, erro
 	return session, nil
 }
 
-func (l *KCPConn) deleteSession(addr net.Addr, id, token uint32) (*Session, error) {
+func (l *KCPConn) deleteSession(addr *net.UDPAddr, id, token uint32) (*Session, error) {
 	session, ok := l.sessions[id]
 	if !ok {
 		return nil, ErrSessionNotFound
@@ -89,7 +89,7 @@ func (l *KCPConn) deleteSession(addr net.Addr, id, token uint32) (*Session, erro
 		delete(l.sessions, id)
 		return nil, ErrSessionNotFound
 	}
-	if session.token != token {
+	if session.remote.String() != addr.String() && session.token != token {
 		return nil, ErrSessionTokenMismatch
 	}
 	delete(l.sessions, id)
@@ -97,7 +97,7 @@ func (l *KCPConn) deleteSession(addr net.Addr, id, token uint32) (*Session, erro
 	return session, nil
 }
 
-func (l *KCPConn) updateSession(addr net.Addr, id, token uint32) (*Session, error) {
+func (l *KCPConn) updateSession(addr *net.UDPAddr, id, token uint32) (*Session, error) {
 	session, ok := l.sessions[id]
 	if !ok {
 		return nil, ErrSessionNotFound
@@ -110,7 +110,7 @@ func (l *KCPConn) updateSession(addr net.Addr, id, token uint32) (*Session, erro
 	return session, nil
 }
 
-func (l *KCPConn) getSession(addr net.Addr, id, token uint32) (*Session, error) {
+func (l *KCPConn) getSession(addr *net.UDPAddr, id, token uint32) (*Session, error) {
 	session, ok := l.sessions[id]
 	if !ok {
 		return nil, ErrSessionNotFound

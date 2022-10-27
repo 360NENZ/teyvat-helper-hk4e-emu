@@ -1,7 +1,6 @@
 package game
 
 import (
-	"errors"
 	"sync"
 	"time"
 
@@ -14,13 +13,9 @@ type PlayerAvatar struct {
 	player *Player
 }
 
-func (p *PlayerAvatar) SetPlayerBornData(ctx *Context, req *pb.SetPlayerBornDataReq) error {
+func (p *PlayerAvatar) SetPlayerBornData(ctx *Context, id uint32) error {
 	p.Lock()
 	defer p.Unlock()
-	id := req.GetAvatarId()
-	if id != 10000005 && id != 10000007 {
-		return errors.New("")
-	}
 	avatar, err := p.AddAvatar(id)
 	if err != nil {
 		return err
@@ -54,7 +49,7 @@ func (p *PlayerAvatar) AddAvatar(id uint32) (*pb.AvatarBin, error) {
 	} else if id == 10000007 {
 		avatar.SkillDepotId = 701
 		avatar.DepotMap = map[uint32]*pb.AvatarSkillDepotBin{
-			701: {SkillLevelMap: map[uint32]uint32{100740: 1}},
+			701: {SkillLevelMap: map[uint32]uint32{100550: 1}},
 		}
 	}
 	item, err := p.player.Item().AddItem(11101)

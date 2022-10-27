@@ -42,6 +42,21 @@ func (s *PlayerSession) CreatePlayer(ctx context.Context, id int64) (*store.Play
 	return player, nil
 }
 
+func (s *PlayerSession) UpdatePlayer(ctx context.Context) (*store.Player, error) {
+	data, err := proto.Marshal(s.player.binary)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.server.Store().PlayerData().UpdatePlayerData(ctx, &store.PlayerData{ID: s.player.ID, BinData: data}); err != nil {
+		return nil, err
+	}
+	return s.player.Player, nil
+}
+
+func (s *PlayerSession) GetPlayerData(ctx context.Context, id int32) (*store.PlayerData, error) {
+	return s.server.Store().PlayerData().GetPlayerData(ctx, id)
+}
+
 func (s *PlayerSession) SetPlayer(player *Player) { s.player = player }
 func (s *PlayerSession) GetPlayer() *Player       { return s.player }
 
@@ -88,7 +103,7 @@ func (s *PlayerSession) handlePacket(packet *net.Packet, onPacket func(*Packet))
 		temp = make([]byte, bodyLength)
 		copy(temp, buf.Bytes())
 	}
-	onPacket(&Packet{session: s, head: head, message: body, command: cmd, rawData: temp})
+	go onPacket(&Packet{session: s, head: head, message: body, command: cmd, rawData: temp})
 }
 
 func (s *PlayerSession) Send(head *pb.PacketHead, body pb.ProtoMessage) error {

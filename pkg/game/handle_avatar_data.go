@@ -37,13 +37,13 @@ func getAvatarEntityInfo(player *Player, avatar *pb.AvatarBin) *pb.SceneEntityIn
 		WearingFlycloakId: avatar.GetFlycloakId(),
 		BornTime:          avatar.GetBornTime(),
 	}
-	sceneAvatar.ExcelInfo = &pb.AvatarExcelInfo{
-		PrefabPathHash:           15226614807408239869,
-		PrefabPathRemoteHash:     12536773066255941804,
-		ControllerPathHash:       17650043375074422160,
-		ControllerPathRemoteHash: 10948695505325057441,
-		CombatConfigHash:         17235148253593515976,
-	}
+	// sceneAvatar.ExcelInfo = &pb.AvatarExcelInfo{
+	// 	PrefabPathHash:           15226614807408239869,
+	// 	PrefabPathRemoteHash:     12536773066255941804,
+	// 	ControllerPathHash:       17650043375074422160,
+	// 	ControllerPathRemoteHash: 10948695505325057441,
+	// 	CombatConfigHash:         17235148253593515976,
+	// }
 	for _, v := range avatar.GetEquipList() {
 		sceneAvatar.EquipIdList = append(sceneAvatar.EquipIdList, v.GetItemId())
 		switch item := v.GetDetail().(type) {

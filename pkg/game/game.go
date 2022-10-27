@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -72,5 +73,10 @@ func (s *Server) UpdateSeed() {
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
+	for _, session := range s.sessions {
+		if _, err := session.UpdatePlayer(ctx); err != nil {
+			log.Println("[GAME] Failed to update player, error:", err)
+		}
+	}
 	return nil
 }
