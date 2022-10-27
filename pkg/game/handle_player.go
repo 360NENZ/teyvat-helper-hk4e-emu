@@ -429,12 +429,19 @@ func (s *Server) SendAntiAddictNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle PlayerForceExitReq
+//
+//	flow:
+//		*RECV <·· PlayerForceExitReq
+//		*SEND ··> PlayerForceExitRsp
 func (s *Server) HandlePlayerForceExitReq(ctx *Context, req *pb.PlayerForceExitReq) error {
-	panic("not implement")
+	if _, err := ctx.Session().UpdatePlayer(ctx); err != nil {
+		return err
+	}
+	return s.SendPlayerForceExitRsp(ctx)
 }
-
 func (s *Server) SendPlayerForceExitRsp(ctx *Context) error {
-	panic("not implement")
+	return s.Send(ctx, &pb.PlayerForceExitRsp{})
 }
 
 func (s *Server) SendPlayerInjectFixNotify(ctx *Context) error {
