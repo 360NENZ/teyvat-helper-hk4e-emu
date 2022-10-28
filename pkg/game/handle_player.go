@@ -2,27 +2,26 @@ package game
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"math/rand"
 	"strconv"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 
-// HandleGetPlayerTokenReq handle GetPlayerTokenReq
+// handle GetPlayerTokenReq
 //
 //	flow:
-//		*RECV <·· GetPlayerTokenReq
-//		*SEND ··> GetPlayerTokenRsp
+//		RECV <·· GetPlayerTokenReq
+//		SEND ··> GetPlayerTokenRsp
 func (s *Server) HandleGetPlayerTokenReq(ctx *Context, req *pb.GetPlayerTokenReq) error {
 	clientSeed, keyID, err := s.handleGetPlayerTokenReq(ctx, req)
 	if err != nil {
-		log.Printf("[GAME] Failed to handle GetPlayerTokenReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle GetPlayerTokenReq")
 		return s.Send(ctx, &pb.GetPlayerTokenRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendGetPlayerTokenRsp(ctx, clientSeed, keyID)
@@ -50,7 +49,6 @@ func (s *Server) handleGetPlayerTokenReq(ctx *Context, req *pb.GetPlayerTokenReq
 	if err != nil {
 		return 0, 0, err
 	}
-	log.Println(binary.BigEndian.Uint64(seed), binary.LittleEndian.Uint64(seed), hex.EncodeToString(seed))
 	return binary.BigEndian.Uint64(seed), req.GetKeyId(), nil
 }
 func (s *Server) SendGetPlayerTokenRsp(ctx *Context, clientSeed uint64, keyID uint32) error {
@@ -82,18 +80,18 @@ func (s *Server) SendGetPlayerTokenRsp(ctx *Context, clientSeed uint64, keyID ui
 // HandlePlayerLoginReq handle GetPlayerTokenReq
 //
 //	flow:
-//		*RECV <·· PlayerLoginReq
-//		*SEND ··> DoSetPlayerBornDataNotify
-//		*SEND ··> PlayerLoginRsp
+//		RECV <·· PlayerLoginReq
+//		SEND ··> DoSetPlayerBornDataNotify
+//		SEND ··> PlayerLoginRsp
 //
 //	flow:
-//		*RECV <·· PlayerLoginReq
-//		*SEND ··> [PlayerData]
-//		*SEND ··> PlayerEnterSceneNotify
-//		*SEND ··> PlayerLoginRsp
+//		RECV <·· PlayerLoginReq
+//		SEND ··> [PlayerData]
+//		SEND ··> PlayerEnterSceneNotify
+//		SEND ··> PlayerLoginRsp
 func (s *Server) HandlePlayerLoginReq(ctx *Context, req *pb.PlayerLoginReq) error {
 	if err := s.handlePlayerLoginReq(ctx, req); err != nil {
-		log.Printf("[GAME] Failed to handle PlayerLoginReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle PlayerLoginReq")
 		return s.Send(ctx, &pb.PlayerLoginRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendPlayerLoginRsp(ctx)
@@ -135,39 +133,39 @@ func (s *Server) SendPlayerDataNotify(ctx *Context) error {
 	notify.NickName = player.Basic().GetNickname()
 	notify.ServerTime = uint64(time.Now().UnixMilli())
 	notify.RegionId = 50
-	notify.PropMap = map[uint32]*pb.PropValue{
-		10004: {Type: 10004, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		10005: {Type: 10005, Value: &pb.PropValue_Ival{Ival: 50}, Val: 50},
-		10006: {Type: 10006, Value: &pb.PropValue_Ival{Ival: 0}},
-		10007: {Type: 10007, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		10008: {Type: 10008, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		10009: {Type: 10009, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		10010: {Type: 10010, Value: &pb.PropValue_Ival{Ival: 10000}, Val: 10000},
-		10011: {Type: 10011, Value: &pb.PropValue_Ival{Ival: 10000}, Val: 10000},
-		10012: {Type: 10012, Value: &pb.PropValue_Ival{Ival: 0}},
-		10013: {Type: 10013, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		10014: {Type: 10014, Value: &pb.PropValue_Ival{Ival: 0}, Val: 0},
-		10015: {Type: 10015, Value: &pb.PropValue_Ival{Ival: 0}, Val: 0},
-		10016: {Type: 10016, Value: &pb.PropValue_Ival{Ival: 0}, Val: 0},
-		10017: {Type: 10017, Value: &pb.PropValue_Ival{Ival: 2}, Val: 2},
-		10019: {Type: 10019, Value: &pb.PropValue_Ival{Ival: 0}},
-		10020: {Type: 10020, Value: &pb.PropValue_Ival{Ival: 160}, Val: 160},
-		10022: {Type: 10022, Value: &pb.PropValue_Ival{Ival: 0}},
-		10023: {Type: 10023, Value: &pb.PropValue_Ival{Ival: 0}},
-		10025: {Type: 10025, Value: &pb.PropValue_Ival{Ival: 0}},
-		10026: {Type: 10026, Value: &pb.PropValue_Ival{Ival: 0}},
-		10027: {Type: 10027, Value: &pb.PropValue_Ival{Ival: 0}},
-		10035: {Type: 10035, Value: &pb.PropValue_Ival{Ival: 0}},
-		10036: {Type: 10036, Value: &pb.PropValue_Ival{Ival: 0}},
-		10037: {Type: 10037, Value: &pb.PropValue_Ival{Ival: 0}},
-		10038: {Type: 10038, Value: &pb.PropValue_Ival{Ival: 0}},
-		10039: {Type: 10039, Value: &pb.PropValue_Ival{Ival: 0}},
-		10040: {Type: 10040, Value: &pb.PropValue_Ival{Ival: 0}},
-		10041: {Type: 10041, Value: &pb.PropValue_Ival{Ival: 0}},
-		10042: {Type: 10042, Value: &pb.PropValue_Ival{Ival: 0}},
-		10043: {Type: 10043, Value: &pb.PropValue_Ival{Ival: 0}},
-		10044: {Type: 10044, Value: &pb.PropValue_Ival{Ival: 0}},
-	}
+	notify.PropMap = PropMap{
+		PropType_PROP_IS_SPRING_AUTO_USE:              1,
+		PropType_PROP_SPRING_AUTO_USE_PERCENT:         50,
+		PropType_PROP_IS_FLYABLE:                      0,
+		PropType_PROP_IS_WEATHER_LOCKED:               1,
+		PropType_PROP_IS_GAME_TIME_LOCKED:             1,
+		PropType_PROP_IS_TRANSFERABLE:                 1,
+		PropType_PROP_MAX_STAMINA:                     10000,
+		PropType_PROP_CUR_PERSIST_STAMINA:             10000,
+		PropType_PROP_CUR_TEMPORARY_STAMINA:           0,
+		PropType_PROP_PLAYER_LEVEL:                    1,
+		PropType_PROP_PLAYER_EXP:                      0,
+		PropType_PROP_PLAYER_HCOIN:                    0,
+		PropType_PROP_PLAYER_SCOIN:                    0,
+		PropType_PROP_PLAYER_MP_SETTING_TYPE:          2,
+		PropType_PROP_PLAYER_WORLD_LEVEL:              0,
+		PropType_PROP_PLAYER_RESIN:                    160,
+		PropType_PROP_PLAYER_WAIT_SUB_HCOIN:           0,
+		PropType_PROP_PLAYER_WAIT_SUB_SCOIN:           0,
+		PropType_PROP_PLAYER_MCOIN:                    0,
+		PropType_PROP_PLAYER_WAIT_SUB_MCOIN:           0,
+		PropType_PROP_PLAYER_LEGENDARY_KEY:            0,
+		PropType_PROP_CUR_CLIMATE_METER:               0,
+		PropType_PROP_CUR_CLIMATE_TYPE:                0,
+		PropType_PROP_CUR_CLIMATE_AREA_ID:             0,
+		PropType_PROP_CUR_CLIMATE_AREA_CLIMATE_TYPE:   0,
+		PropType_PROP_PLAYER_WORLD_LEVEL_LIMIT:        0,
+		PropType_PROP_PLAYER_WORLD_LEVEL_ADJUST_CD:    0,
+		PropType_PROP_PLAYER_LEGENDARY_DAILY_TASK_NUM: 0,
+		PropType_PROP_PLAYER_HOME_COIN:                0,
+		PropType_PROP_PLAYER_WAIT_SUB_HOME_COIN:       0,
+		PropType_PROP_IS_AUTO_UNLOCK_SPECIFIC_EQUIP:   0,
+	}.ToPropMap()
 	return s.Send(ctx, &notify)
 }
 
@@ -202,13 +200,13 @@ func (s *Server) SendSetPlayerPropRsp(ctx *Context) error {
 // handle SetPlayerBornDataReq
 //
 //	flow:
-//		*RECV <·· SetPlayerBornDataReq
-//		*SEND ··> [PlayerData]
-//		*SEND ··> SetPlayerBornDataRsp
-//		*SEND ··> PlayerEnterSceneNotify
+//		RECV <·· SetPlayerBornDataReq
+//		SEND ··> [PlayerData]
+//		SEND ··> SetPlayerBornDataRsp
+//		SEND ··> PlayerEnterSceneNotify
 func (s *Server) HandleSetPlayerBornDataReq(ctx *Context, req *pb.SetPlayerBornDataReq) error {
 	if err := s.handleSetPlayerBornDataReq(ctx, req); err != nil {
-		log.Printf("[GAME] Failed to handle SetPlayerBornDataReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle SetPlayerBornDataReq")
 		return s.Send(ctx, &pb.SetPlayerBornDataRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendSetPlayerBornDataRsp(ctx)
@@ -240,7 +238,7 @@ func (s *Server) SendSetPlayerBornDataRsp(ctx *Context) error {
 // send DoSetPlayerBornDataNotify
 //
 //	flow:
-//		*SEND ··> DoSetPlayerBornDataNotify
+//		SEND ··> DoSetPlayerBornDataNotify
 func (s *Server) SendDoSetPlayerBornDataNotify(ctx *Context) error {
 	return s.Send(ctx, &pb.DoSetPlayerBornDataNotify{})
 }
@@ -249,28 +247,60 @@ func (s *Server) SendPlayerPropChangeNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle SetPlayerNameReq
+//
+//	flow:
+//		RECV <·· SetPlayerNameReq
+//		SEND ··> SetPlayerNameRsp
 func (s *Server) HandleSetPlayerNameReq(ctx *Context, req *pb.SetPlayerNameReq) error {
-	panic("not implement")
+	player := ctx.Session().GetPlayer()
+	name := req.GetNickName()
+	if err := player.Basic().SetNickname(ctx, name); err != nil {
+		return s.Send(ctx, &pb.SetPlayerNameRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
+	}
+	return s.SendSetPlayerNameRsp(ctx, name)
+}
+func (s *Server) SendSetPlayerNameRsp(ctx *Context, name string) error {
+	return s.Send(ctx, &pb.SetPlayerNameRsp{NickName: name})
 }
 
-func (s *Server) SendSetPlayerNameRsp(ctx *Context) error {
-	panic("not implement")
-}
-
+// handle SetOpenStateReq
+//
+//	flow:
+//		RECV <·· SetOpenStateReq
+//		SEND ··> SetOpenStateRsp
+//		SEND ··> OpenStateChangeNotify
 func (s *Server) HandleSetOpenStateReq(ctx *Context, req *pb.SetOpenStateReq) error {
-	panic("not implement")
+	player := ctx.Session().GetPlayer()
+	key, value := req.GetKey(), req.GetValue()
+	if err := player.Basic().SetOpenState(ctx, key, value); err != nil {
+		log.Error().Err(err).Msg("Failed to handle SetOpenStateReq")
+		return s.Send(ctx, &pb.SetOpenStateRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
+	}
+	return s.SendSetOpenStateRsp(ctx, key, value)
+}
+func (s *Server) SendSetOpenStateRsp(ctx *Context, key, value uint32) error {
+	if err := s.Send(ctx, &pb.SetOpenStateRsp{Key: key, Value: value}); err != nil {
+		return err
+	}
+	return s.SendOpenStateChangeNotify(ctx, key, value)
 }
 
-func (s *Server) SendSetOpenStateRsp(ctx *Context) error {
-	panic("not implement")
-}
-
+// send OpenStateUpdateNotify
+//
+//	flow:
+//		SEND ··> OpenStateUpdateNotify
 func (s *Server) SendOpenStateUpdateNotify(ctx *Context) error {
-	panic("not implement")
+	player := ctx.Session().GetPlayer()
+	return s.Send(ctx, &pb.OpenStateUpdateNotify{OpenStateMap: player.Basic().GetOpenStateMap()})
 }
 
-func (s *Server) SendOpenStateChangeNotify(ctx *Context) error {
-	panic("not implement")
+// send OpenStateChangeNotify
+//
+//	flow:
+//		SEND ··> OpenStateChangeNotify
+func (s *Server) SendOpenStateChangeNotify(ctx *Context, key, value uint32) error {
+	return s.Send(ctx, &pb.OpenStateChangeNotify{OpenStateMap: map[uint32]uint32{key: value}})
 }
 
 func (s *Server) HandlePlayerCookReq(ctx *Context, req *pb.PlayerCookReq) error {
@@ -336,8 +366,8 @@ func (s *Server) SendPlayerTimeNotify(ctx *Context) error {
 // handle PlayerSetPauseReq
 //
 //	flow:
-//		*RECV <·· PlayerSetPauseReq
-//		*SEND ··> PlayerSetPauseRsp
+//		RECV <·· PlayerSetPauseReq
+//		SEND ··> PlayerSetPauseRsp
 func (s *Server) HandlePlayerSetPauseReq(ctx *Context, req *pb.PlayerSetPauseReq) error {
 	return s.SendPlayerSetPauseRsp(ctx, req.GetIsPaused())
 }
@@ -432,12 +462,10 @@ func (s *Server) SendAntiAddictNotify(ctx *Context) error {
 // handle PlayerForceExitReq
 //
 //	flow:
-//		*RECV <·· PlayerForceExitReq
-//		*SEND ··> PlayerForceExitRsp
+//		RECV <·· PlayerForceExitReq
+//		SEND ··> PlayerForceExitRsp
 func (s *Server) HandlePlayerForceExitReq(ctx *Context, req *pb.PlayerForceExitReq) error {
-	if _, err := ctx.Session().UpdatePlayer(ctx); err != nil {
-		return err
-	}
+	defer s.deletePlayerSession(ctx, ctx.Session())
 	return s.SendPlayerForceExitRsp(ctx)
 }
 func (s *Server) SendPlayerForceExitRsp(ctx *Context) error {

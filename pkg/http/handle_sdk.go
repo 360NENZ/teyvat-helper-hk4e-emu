@@ -3,16 +3,18 @@ package http
 import (
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"log"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
@@ -119,18 +121,21 @@ type sdkShieldLoginResponseData struct {
 func (s *Server) handleSDKShieldLogin(c *gin.Context) {
 	var req sdkShieldLoginRequestData
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("[HTTP] Failed to bind json: %v", err)
+		log.Error().Err(err).Msg("Failed to bind JSON")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
 	if req.Account == "" {
-		log.Printf("[HTTP] Account is empty")
+		log.Error().Err(fmt.Errorf("account is empty")).Msg("Bad request")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
 	account, err := s.serviceShieldLogin(c, req.Account, "")
+	if err == sql.ErrNoRows {
+		account, err = s.serviceCreateAccount(c, req.Account, "")
+	}
 	if err != nil {
-		log.Printf("[HTTP] Failed to shield login: %v", err)
+		log.Error().Err(err).Msg("Failed to shield login")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
@@ -167,6 +172,21 @@ func (s *Server) serviceShieldLogin(ctx context.Context, username, password stri
 	return record, s.store.Account().UpdateAccountLoginToken(ctx, record.ID, record.LoginToken)
 }
 
+func (s *Server) serviceCreateAccount(ctx context.Context, username, password string) (record *store.Account, err error) {
+	if !strings.Contains(username, "@") {
+		record = &store.Account{Username: username, Email: username + "@" + s.config.BaseDomain}
+		if err = s.store.Account().CreateAccount(ctx, record); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("email is not supported")
+	}
+	loginToken := make([]byte, 24)
+	rand.Read(loginToken)
+	record.LoginToken = base64.RawStdEncoding.EncodeToString(loginToken)
+	return record, s.store.Account().UpdateAccountLoginToken(ctx, record.ID, record.LoginToken)
+}
+
 type sdkShieldVerifyRequestData struct {
 	UID   ID     `json:"uid"`
 	Token string `json:"token"`
@@ -183,13 +203,13 @@ type sdkShieldVerifyResponseData struct {
 func (s *Server) handleSDKShieldVerify(c *gin.Context) {
 	var req sdkShieldVerifyRequestData
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("[HTTP] Failed to bind json: %v", err)
+		log.Error().Err(err).Msg("Failed to bind JSON")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-210, nil))
 		return
 	}
 	account, err := s.serviceShieldVerify(c, int64(req.UID), req.Token)
 	if err != nil {
-		log.Printf("[HTTP] Failed to shield verify: %v", err)
+		log.Error().Err(err).Msg("Failed to shield verify")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-210, nil))
 		return
 	}
@@ -245,19 +265,19 @@ type sdkComboLoginResponseData struct {
 func (s *Server) handleSDKComboLogin(c *gin.Context) {
 	var req sdkComboLoginRequestData
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("[HTTP] Failed to bind json: %v", err)
+		log.Error().Err(err).Msg("Failed to bind JSON")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
 	var data sdkComboLoginData
 	if err := json.Unmarshal([]byte(req.Data), &data); err != nil {
-		log.Printf("[HTTP] Failed to unmarshal data: %v", err)
+		log.Error().Err(err).Msg("Failed to unmarshal data")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
 	account, err := s.serviceComboLogin(c, int64(data.UID), data.Token)
 	if err != nil {
-		log.Printf("[HTTP] Failed to combo login: %v", err)
+		log.Error().Err(err).Msg("Failed to combo login")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}

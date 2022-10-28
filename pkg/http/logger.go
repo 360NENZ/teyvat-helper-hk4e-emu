@@ -5,6 +5,7 @@ import (
 	"net/http/httputil"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 type Logger struct {
@@ -37,12 +38,7 @@ func (l *Logger) HandlerFunc() gin.HandlerFunc {
 			if l.Dump {
 				fmt.Println("\n\n\n\n*********************************************")
 			}
-			fmt.Printf("%6s %s://%s%s\n",
-				c.Request.Method,
-				c.GetHeader("X-Forwarded-Proto"),
-				c.GetHeader("X-Forwarded-Host"),
-				c.Request.URL,
-			)
+			log.Debug().Str("path", path).Str("method", c.Request.Method).Str("ip", c.ClientIP()).Msg("Request")
 			if l.Dump {
 				fmt.Println("\n\nRequest:")
 				b, _ := httputil.DumpRequest(c.Request, true)

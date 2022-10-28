@@ -2,9 +2,9 @@
 .vscode/
 
 bin/
-*.work
-*.work.sum
+log/
 *.yaml
+!*.example.yaml
 
 # Binaries for programs and plugins
 *.exe

@@ -21,8 +21,8 @@ func (s *Server) SendShowMessageNotify(ctx *Context) error {
 // handle PingReq
 //
 //	flow:
-//		*RECV <·· PingReq
-//		*SEND ··> PingRsp
+//		RECV <·· PingReq
+//		SEND ··> PingRsp
 func (s *Server) HandlePingReq(ctx *Context, req *pb.PingReq) error {
 	return s.SendPingRsp(ctx, req.GetClientTime())
 }

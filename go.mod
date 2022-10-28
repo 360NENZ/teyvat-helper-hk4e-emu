@@ -5,13 +5,14 @@ go 1.19
 require (
 	github.com/aj3423/aproto v0.0.0-20221015122707-91b1011be03e
 	github.com/gin-gonic/gin v1.8.1
+	github.com/rs/zerolog v1.28.0
 	github.com/spf13/viper v1.13.0
 	github.com/teyvat-helper/hk4e-proto v0.0.0-20221027153353-c3e4566aa223
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.8
 	github.com/uptrace/bun/driver/sqliteshim v1.1.8
-	github.com/uptrace/bun/extra/bundebug v1.1.8
 	google.golang.org/protobuf v1.28.1
+	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )
 
 require (

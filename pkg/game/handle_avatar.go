@@ -65,7 +65,7 @@ func (s *Server) SendAvatarTeamUpdateNotify(ctx *Context) error {
 // send AvatarDataNotify
 //
 //	flow:
-//		*SEND ··> AvatarDataNotify
+//		SEND ··> AvatarDataNotify
 func (s *Server) SendAvatarDataNotify(ctx *Context) (err error) {
 	var notify pb.AvatarDataNotify
 	avatar := ctx.Session().GetPlayer().Avatar()
@@ -84,47 +84,47 @@ func (s *Server) SendAvatarDataNotify(ctx *Context) (err error) {
 		avatar.WearingFlycloakId = v.GetFlycloakId()
 		avatar.BornTime = v.GetBornTime()
 		avatar.PendingPromoteRewardList = []uint32{1, 3, 5}
-		avatar.PropMap = map[uint32]*pb.PropValue{
-			1001: {Type: 1001, Value: &pb.PropValue_Ival{Ival: 0}},
-			1002: {Type: 1002, Value: &pb.PropValue_Ival{Ival: 0}},
-			1003: {Type: 1003, Value: &pb.PropValue_Ival{Ival: 0}},
-			1004: {Type: 1004, Value: &pb.PropValue_Ival{Ival: 0}},
-			4001: {Type: 4001, Value: &pb.PropValue_Ival{Ival: 1}, Val: 1},
-		}
-		avatar.FightPropMap = map[uint32]float32{
-			1:    911.791,
-			4:    41.053,
-			6:    0,
-			7:    57.225,
-			20:   0.05,
-			21:   0,
-			22:   0.5,
-			23:   1,
-			26:   0,
-			27:   0,
-			28:   0,
-			29:   0,
-			30:   0,
-			40:   0,
-			41:   0,
-			42:   0,
-			43:   0,
-			44:   0,
-			45:   0,
-			46:   0,
-			50:   0,
-			51:   0,
-			52:   0,
-			53:   0,
-			54:   0,
-			55:   0,
-			56:   0,
-			1010: 911.791,
-			2000: 911.791,
-			2001: 41.053,
-			2002: 57.225,
-			2003: 0,
-		}
+		avatar.PropMap = PropMap{
+			PropType_PROP_EXP:                    0,
+			PropType_PROP_BREAK_LEVEL:            0,
+			PropType_PROP_SATIATION_VAL:          0,
+			PropType_PROP_SATIATION_PENALTY_TIME: 0,
+			PropType_PROP_LEVEL:                  1,
+		}.ToPropMap()
+		avatar.FightPropMap = FightPropMap{
+			FightPropType_FIGHT_PROP_BASE_HP:           911.791,
+			FightPropType_FIGHT_PROP_BASE_ATTACK:       41.053,
+			FightPropType_FIGHT_PROP_ATTACK_PERCENT:    0,
+			FightPropType_FIGHT_PROP_BASE_DEFENSE:      57.225,
+			FightPropType_FIGHT_PROP_CRITICAL:          0.05,
+			FightPropType_FIGHT_PROP_ANTI_CRITICAL:     0,
+			FightPropType_FIGHT_PROP_CRITICAL_HURT:     0.5,
+			FightPropType_FIGHT_PROP_CHARGE_EFFICIENCY: 1,
+			FightPropType_FIGHT_PROP_HEAL_ADD:          0,
+			FightPropType_FIGHT_PROP_HEALED_ADD:        0,
+			FightPropType_FIGHT_PROP_ELEMENT_MASTERY:   0,
+			FightPropType_FIGHT_PROP_PHYSICAL_SUB_HURT: 0,
+			FightPropType_FIGHT_PROP_PHYSICAL_ADD_HURT: 0,
+			FightPropType_FIGHT_PROP_FIRE_ADD_HURT:     0,
+			FightPropType_FIGHT_PROP_ELEC_ADD_HURT:     0,
+			FightPropType_FIGHT_PROP_WATER_ADD_HURT:    0,
+			FightPropType_FIGHT_PROP_GRASS_ADD_HURT:    0,
+			FightPropType_FIGHT_PROP_WIND_ADD_HURT:     0,
+			FightPropType_FIGHT_PROP_ROCK_ADD_HURT:     0,
+			FightPropType_FIGHT_PROP_ICE_ADD_HURT:      0,
+			FightPropType_FIGHT_PROP_FIRE_SUB_HURT:     0,
+			FightPropType_FIGHT_PROP_ELEC_SUB_HURT:     0,
+			FightPropType_FIGHT_PROP_WATER_SUB_HURT:    0,
+			FightPropType_FIGHT_PROP_GRASS_SUB_HURT:    0,
+			FightPropType_FIGHT_PROP_WIND_SUB_HURT:     0,
+			FightPropType_FIGHT_PROP_ROCK_SUB_HURT:     0,
+			FightPropType_FIGHT_PROP_ICE_SUB_HURT:      0,
+			FightPropType_FIGHT_PROP_CUR_HP:            911.791,
+			FightPropType_FIGHT_PROP_MAX_HP:            911.791,
+			FightPropType_FIGHT_PROP_CUR_ATTACK:        41.053,
+			FightPropType_FIGHT_PROP_CUR_DEFENSE:       57.225,
+			FightPropType_FIGHT_PROP_CUR_SPEED:         0,
+		}.ToFightPropMap()
 		avatar.FetterInfo = &pb.AvatarFetterInfo{ExpLevel: 1}
 		notify.AvatarList = append(notify.AvatarList, avatar)
 	}
@@ -225,7 +225,7 @@ func (s *Server) SendChangeTeamNameRsp(ctx *Context) error {
 // send SceneTeamUpdateNotify
 //
 //	flow:
-//		*SEND ··> SceneTeamUpdateNotify
+//		SEND ··> SceneTeamUpdateNotify
 func (s *Server) SendSceneTeamUpdateNotify(ctx *Context) error {
 	player := ctx.Session().GetPlayer()
 	avatar := player.Avatar().GetAvatarList()[0]
@@ -233,39 +233,39 @@ func (s *Server) SendSceneTeamUpdateNotify(ctx *Context) error {
 	var abilityEmbryoList []*pb.AbilityEmbryo
 	if avatar.GetAvatarId() == 10000005 {
 		abilityEmbryoList = []*pb.AbilityEmbryo{
-			{AbilityId: 1, AbilityNameHash: 2957764605, AbilityOverrideNameHash: 1178079449},  // Avatar_PlayerBoy_NormalAttack_DamageHandler
-			{AbilityId: 2, AbilityNameHash: 1410219662, AbilityOverrideNameHash: 1178079449},  // Avatar_Player_FlyingBomber
-			{AbilityId: 3, AbilityNameHash: 1474894886, AbilityOverrideNameHash: 1178079449},  // Avatar_Player_CamCtrl
-			{AbilityId: 4, AbilityNameHash: 937205334, AbilityOverrideNameHash: 1178079449},   // Avatar_PlayerBoy_FallingAnthem
-			{AbilityId: 5, AbilityNameHash: 1771196189, AbilityOverrideNameHash: 1178079449},  // *GrapplingHookSkill_Ability
-			{AbilityId: 6, AbilityNameHash: 2306062007, AbilityOverrideNameHash: 1178079449},  // *Avatar_DefaultAbility_VisionReplaceDieInvincible
-			{AbilityId: 7, AbilityNameHash: 3105629177, AbilityOverrideNameHash: 1178079449},  // *Avatar_DefaultAbility_AvartarInShaderChange
-			{AbilityId: 8, AbilityNameHash: 3771526669, AbilityOverrideNameHash: 1178079449},  // *Avatar_SprintBS_Invincible
-			{AbilityId: 9, AbilityNameHash: 100636247, AbilityOverrideNameHash: 1178079449},   // *Avatar_Freeze_Duration_Reducer
-			{AbilityId: 10, AbilityNameHash: 1564404322, AbilityOverrideNameHash: 1178079449}, // *Avatar_Attack_ReviveEnergy
-			{AbilityId: 11, AbilityNameHash: 497711942, AbilityOverrideNameHash: 1178079449},  // *Avatar_Component_Initializer
-			{AbilityId: 12, AbilityNameHash: 3531639848, AbilityOverrideNameHash: 1178079449}, // *Avatar_HDMesh_Controller
-			{AbilityId: 13, AbilityNameHash: 4255783285, AbilityOverrideNameHash: 1178079449}, // *Avatar_Trampoline_Jump_Controller
-			{AbilityId: 14, AbilityNameHash: 1042696700, AbilityOverrideNameHash: 1178079449}, // Avatar_PlayerBoy_ExtraAttack_Common
-			{AbilityId: 15, AbilityNameHash: 825255509, AbilityOverrideNameHash: 1178079449},  // *Avatar_FallAnthem_Achievement_Listener
+			{AbilityId: 1, AbilityNameHash: 2957764605, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 2, AbilityNameHash: 1410219662, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 3, AbilityNameHash: 1474894886, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 4, AbilityNameHash: 937205334, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 5, AbilityNameHash: 1771196189, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 6, AbilityNameHash: 2306062007, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 7, AbilityNameHash: 3105629177, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 8, AbilityNameHash: 3771526669, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 9, AbilityNameHash: 100636247, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 10, AbilityNameHash: 1564404322, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 11, AbilityNameHash: 497711942, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 12, AbilityNameHash: 3531639848, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 13, AbilityNameHash: 4255783285, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 14, AbilityNameHash: 1042696700, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 15, AbilityNameHash: 825255509, AbilityOverrideNameHash: 1178079449},
 		}
 	} else if avatar.GetAvatarId() == 10000007 {
 		abilityEmbryoList = []*pb.AbilityEmbryo{
-			{AbilityId: 1, AbilityNameHash: 4291357363, AbilityOverrideNameHash: 1178079449},  // Avatar_PlayerGirl_NormalAttack_DamageHandler
-			{AbilityId: 2, AbilityNameHash: 1410219662, AbilityOverrideNameHash: 1178079449},  // Avatar_Player_FlyingBomber
-			{AbilityId: 3, AbilityNameHash: 1474894886, AbilityOverrideNameHash: 1178079449},  // Avatar_Player_CamCtrl
-			{AbilityId: 4, AbilityNameHash: 3832178184, AbilityOverrideNameHash: 1178079449},  // Avatar_PlayerGirl_FallingAnthem
-			{AbilityId: 5, AbilityNameHash: 1771196189, AbilityOverrideNameHash: 1178079449},  // *GrapplingHookSkill_Ability
-			{AbilityId: 6, AbilityNameHash: 2306062007, AbilityOverrideNameHash: 1178079449},  // *Avatar_DefaultAbility_VisionReplaceDieInvincible
-			{AbilityId: 7, AbilityNameHash: 3105629177, AbilityOverrideNameHash: 1178079449},  // *Avatar_DefaultAbility_AvartarInShaderChange
-			{AbilityId: 8, AbilityNameHash: 3771526669, AbilityOverrideNameHash: 1178079449},  // *Avatar_SprintBS_Invincible
-			{AbilityId: 9, AbilityNameHash: 100636247, AbilityOverrideNameHash: 1178079449},   // *Avatar_Freeze_Duration_Reducer
-			{AbilityId: 10, AbilityNameHash: 1564404322, AbilityOverrideNameHash: 1178079449}, // *Avatar_Attack_ReviveEnergy
-			{AbilityId: 11, AbilityNameHash: 497711942, AbilityOverrideNameHash: 1178079449},  // *Avatar_Component_Initializer
-			{AbilityId: 12, AbilityNameHash: 3531639848, AbilityOverrideNameHash: 1178079449}, // *Avatar_HDMesh_Controller
-			{AbilityId: 13, AbilityNameHash: 4255783285, AbilityOverrideNameHash: 1178079449}, // *Avatar_Trampoline_Jump_Controller
-			{AbilityId: 14, AbilityNameHash: 3374327026, AbilityOverrideNameHash: 1178079449}, // Avatar_PlayerGirl_ExtraAttack_Common
-			{AbilityId: 15, AbilityNameHash: 825255509, AbilityOverrideNameHash: 1178079449},  // *Avatar_FallAnthem_Achievement_Listener
+			{AbilityId: 1, AbilityNameHash: 4291357363, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 2, AbilityNameHash: 1410219662, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 3, AbilityNameHash: 1474894886, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 4, AbilityNameHash: 3832178184, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 5, AbilityNameHash: 1771196189, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 6, AbilityNameHash: 2306062007, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 7, AbilityNameHash: 3105629177, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 8, AbilityNameHash: 3771526669, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 9, AbilityNameHash: 100636247, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 10, AbilityNameHash: 1564404322, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 11, AbilityNameHash: 497711942, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 12, AbilityNameHash: 3531639848, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 13, AbilityNameHash: 4255783285, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 14, AbilityNameHash: 3374327026, AbilityOverrideNameHash: 1178079449},
+			{AbilityId: 15, AbilityNameHash: 825255509, AbilityOverrideNameHash: 1178079449},
 		}
 	}
 	notify.SceneTeamAvatarList = []*pb.SceneTeamAvatar{{
@@ -273,10 +273,10 @@ func (s *Server) SendSceneTeamUpdateNotify(ctx *Context) error {
 		PlayerUid:           uint32(player.ID),
 		IsPlayerCurAvatar:   false,
 		AvatarGuid:          avatar.GetGuid(),
-		EntityId:            1<<24 | 1,
+		EntityId:            uint32(pb.ProtEntityType_PROT_ENTITY_AVATAR)<<24 | 1,
 		AvatarAbilityInfo:   &pb.AbilitySyncStateInfo{},
-		WeaponGuid:          uint64(player.ID)<<32 | 2, // TODO: WeaponGUID
-		WeaponEntityId:      6<<24 | 1,
+		WeaponGuid:          uint64(player.ID)<<32 | 2,
+		WeaponEntityId:      uint32(pb.ProtEntityType_PROT_ENTITY_WEAPON)<<24 | 1,
 		WeaponAbilityInfo:   &pb.AbilitySyncStateInfo{},
 		SceneEntityInfo:     getAvatarEntityInfo(player, avatar),
 		AbilityControlBlock: &pb.AbilityControlBlock{AbilityEmbryoList: abilityEmbryoList},

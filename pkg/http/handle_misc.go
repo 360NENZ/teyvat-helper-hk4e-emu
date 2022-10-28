@@ -1,10 +1,10 @@
 package http
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func (s *Server) handleDefault(c *gin.Context) {
@@ -23,6 +23,6 @@ func (s *Server) handleWebStaticJSON(c *gin.Context) {
 	if c.Request.URL.Path == "/admin/mi18n/plat_oversea/m2020030410/m2020030410-version.json" {
 		c.JSON(http.StatusOK, gin.H{"version": 65})
 	} else {
-		log.Printf("[WARN] ignore unknown request, safely: %s", c.Request.URL.Path)
+		log.Warn().Str("path", c.Request.URL.Path).Msg("ignore unknown request, safely")
 	}
 }

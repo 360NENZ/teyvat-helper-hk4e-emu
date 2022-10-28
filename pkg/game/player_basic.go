@@ -24,6 +24,27 @@ func (p *PlayerBasic) SetPlayerBornData(ctx *Context, id uint32, name string) er
 	defer p.Unlock()
 	p.Level = 1
 	p.Nickname = name
+	p.OpenStateMap = map[uint32]uint32{
+		OpenStateType_OPEN_STATE_AVATAR_PROMOTE:           1,
+		OpenStateType_OPEN_STATE_AVATAR_TALENT:            1,
+		OpenStateType_OPEN_STATE_WEAPON_PROMOTE:           1,
+		OpenStateType_OPEN_STATE_WEAPON_AWAKEN:            1,
+		OpenStateType_OPEN_STATE_WEAPON_UPGRADE:           1,
+		OpenStateType_OPEN_STATE_RELIQUARY_UPGRADE:        1,
+		OpenStateType_OPEN_STATE_RELIQUARY_PROMOTE:        1,
+		OpenStateType_OPEN_STATE_GUIDE_TALENT:             1,
+		OpenStateType_OPEN_STATE_GUIDE_RELIC_PROM:         1,
+		OpenStateType_OPEN_STATE_RESIN:                    1,
+		OpenStateType_OPEN_STATE_PHOTOGRAPH:               1,
+		OpenStateType_OPEN_STATE_DERIVATIVE_MALL:          1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_RECOMMANDED:    1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_GENESISCRYSTAL: 1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_GIFTPACKAGE:    1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_PAIMON:         1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_BLACKSMITH:     1,
+		OpenStateType_OPEN_STATE_SHOP_TYPE_VIRTUAL_SHOP:   1,
+		OpenStateType_OPEN_STATE_BATTLE_PASS:              1,
+	}
 	p.HeadImageAvatarId = id
 	return nil
 }
@@ -32,5 +53,15 @@ func (p *PlayerBasic) SetNickname(ctx *Context, name string) error {
 	p.Lock()
 	defer p.Unlock()
 	p.Nickname = name
+	return nil
+}
+
+func (p *PlayerBasic) SetOpenState(ctx *Context, key, value uint32) error {
+	p.Lock()
+	defer p.Unlock()
+	if p.OpenStateMap == nil {
+		p.OpenStateMap = map[uint32]uint32{}
+	}
+	p.OpenStateMap[key] = value
 	return nil
 }

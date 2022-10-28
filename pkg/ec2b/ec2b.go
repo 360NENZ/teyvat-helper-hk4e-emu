@@ -56,6 +56,16 @@ func (e *Ec2b) init() {
 	e.SetSeed(getSeed(k, e.data))
 }
 
+func (e *Ec2b) Bytes() []byte {
+	b := make([]byte, 4+4+16+4+2048)
+	copy(b[0:4], []byte("Ec2b"))
+	binary.LittleEndian.PutUint32(b[4:], 16)
+	copy(b[8:], e.key)
+	binary.LittleEndian.PutUint32(b[24:], 2048)
+	copy(b[28:], e.data)
+	return b
+}
+
 func (e *Ec2b) SetSeed(seed uint64) {
 	e.seed = seed
 	r := mt19937.NewRand64()

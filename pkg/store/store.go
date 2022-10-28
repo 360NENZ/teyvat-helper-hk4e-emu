@@ -8,7 +8,6 @@ import (
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"
-	"github.com/uptrace/bun/extra/bundebug"
 )
 
 type Store struct {
@@ -38,8 +37,6 @@ func (s *Store) init() {
 	s.player = &PlayerStore{db: s.db}
 	s.playerData = &PlayerDataStore{db: s.db}
 	s.blockData = &BlockDataStore{db: s.db}
-	s.homeData = &HomeDataStore{db: s.db}
-	s.db.AddQueryHook(bundebug.NewQueryHook(bundebug.WithVerbose(true)))
 	if err := s.install(context.Background()); err != nil {
 		panic(err)
 	}

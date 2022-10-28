@@ -29,8 +29,8 @@ func (s *Server) SendDealAddFriendRsp(ctx *Context) error {
 // handle GetPlayerSocialDetailReq
 //
 //	flow:
-//		*RECV <·· GetPlayerSocialDetailReq
-//		*SEND ··> GetPlayerSocialDetailRsp
+//		RECV <·· GetPlayerSocialDetailReq
+//		SEND ··> GetPlayerSocialDetailRsp
 func (s *Server) HandleGetPlayerSocialDetailReq(ctx *Context, req *pb.GetPlayerSocialDetailReq) error {
 	return s.SendGetPlayerSocialDetailRsp(ctx, req.GetUid())
 }
@@ -70,20 +70,61 @@ func (s *Server) SendDeleteFriendRsp(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle SetPlayerBirthdayReq
+//
+//	flow:
+//		RECV <·· SetPlayerBirthdayReq
+//		SEND ··> SetPlayerBirthdayRsp
 func (s *Server) HandleSetPlayerBirthdayReq(ctx *Context, req *pb.SetPlayerBirthdayReq) error {
-	panic("not implement")
+	social := ctx.Session().GetPlayer().Social()
+	if social.GetBirthday().GetMonth() != 0 && social.GetBirthday().GetDay() != 0 {
+		return s.Send(ctx, &pb.SetPlayerBirthdayRsp{Retcode: int32(pb.Retcode_RET_BIRTHDAY_CANNOT_BE_SET_TWICE)})
+	}
+	birthday := req.GetBirthday()
+	retcode := pb.Retcode_RET_SUCC
+	switch birthday.GetMonth() {
+	default:
+		retcode = pb.Retcode_RET_BIRTHDAY_FORMAT_ERROR
+	case 2:
+		if birthday.GetDay() > 28 {
+			retcode = pb.Retcode_RET_BIRTHDAY_FORMAT_ERROR
+		}
+	case 4, 6, 9, 11:
+		if birthday.GetDay() > 30 {
+			retcode = pb.Retcode_RET_BIRTHDAY_FORMAT_ERROR
+		}
+	case 1, 3, 5, 7, 8, 10, 12:
+		if birthday.GetDay() > 31 {
+			retcode = pb.Retcode_RET_BIRTHDAY_FORMAT_ERROR
+		}
+	}
+	if retcode != 0 {
+		return s.Send(ctx, &pb.SetPlayerBirthdayRsp{Retcode: int32(retcode)})
+	}
+	if err := social.SetBirthday(ctx, birthday); err != nil {
+		return s.Send(ctx, &pb.SetPlayerBirthdayRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
+	}
+	return s.SendSetPlayerBirthdayRsp(ctx, birthday)
+}
+func (s *Server) SendSetPlayerBirthdayRsp(ctx *Context, birthday *pb.Birthday) error {
+	return s.Send(ctx, &pb.SetPlayerBirthdayRsp{Birthday: birthday})
 }
 
-func (s *Server) SendSetPlayerBirthdayRsp(ctx *Context) error {
-	panic("not implement")
-}
-
+// handle SetPlayerSignatureReq
+//
+//	flow:
+//		RECV <·· SetPlayerSignatureReq
+//		SEND ··> SetPlayerSignatureRsp
 func (s *Server) HandleSetPlayerSignatureReq(ctx *Context, req *pb.SetPlayerSignatureReq) error {
-	panic("not implement")
+	social := ctx.Session().GetPlayer().Social()
+	signature := req.GetSignature()
+	if err := social.SetSignature(ctx, signature); err != nil {
+		return s.Send(ctx, &pb.SetPlayerSignatureRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
+	}
+	return s.SendSetPlayerSignatureRsp(ctx, signature)
 }
-
-func (s *Server) SendSetPlayerSignatureRsp(ctx *Context) error {
-	panic("not implement")
+func (s *Server) SendSetPlayerSignatureRsp(ctx *Context, signature string) error {
+	return s.Send(ctx, &pb.SetPlayerSignatureRsp{Signature: signature})
 }
 
 func (s *Server) HandleSetPlayerHeadImageReq(ctx *Context, req *pb.SetPlayerHeadImageReq) error {

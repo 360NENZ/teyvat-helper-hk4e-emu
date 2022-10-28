@@ -1,10 +1,10 @@
 package http
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 )
 
 func (s *Server) handleSDKGetAgreementInfos(c *gin.Context) {
@@ -43,7 +43,7 @@ type sdkCompareProtocolVersionResponseData struct {
 func (s *Server) handleSDKCompareProtocolVersion(c *gin.Context) {
 	var req sdkCompareProtocolVersionRequestData
 	if err := c.BindJSON(&req); err != nil {
-		log.Printf("[HTTP] Failed to bind request: %v", err)
+		log.Error().Err(err).Msg("Failed to bind request")
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-106, nil))
 		return
 	}
@@ -75,7 +75,7 @@ func (s *Server) handleSDKGetConfig(c *gin.Context) {
 		"protocol":                  true,
 		"qr_enabled":                false,
 		"log_level":                 "INFO",
-		"announce_url":              "https://example.com/hk4e/announcement/index.html?sdk_presentation_style=fullscreen\u0026announcement_version=1.21\u0026sdk_screen_transparent=true\u0026game_biz=hk4e_global\u0026auth_appid=announcement\u0026game=hk4e#/",
+		"announce_url":              "https://" + s.config.BaseDomain + "/hk4e/announcement/index.html?sdk_presentation_style=fullscreen&announcement_version=1.21&sdk_screen_transparent=true&game_biz=hk4e_global&auth_appid=announcement&game=hk4e#/",
 		"push_alias_type":           2,
 		"disable_ysdk_guard":        false,
 		"enable_announce_pic_popup": true,
@@ -91,7 +91,7 @@ func (s *Server) handleSDKLoadConfig(c *gin.Context) {
 		"guest":                  false,
 		"ignore_versions":        "",
 		"scene":                  "S_NORMAL",
-		"name":                   "原神海外",
+		"name":                   "HK4E Global",
 		"disable_regist":         false,
 		"enable_email_captcha":   false,
 		"thirdparty":             []string{"fb", "tw"},

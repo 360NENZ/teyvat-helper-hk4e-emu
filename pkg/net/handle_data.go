@@ -2,8 +2,9 @@ package net
 
 import (
 	"encoding/binary"
-	"log"
 	"net"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (l *KCPConn) handleDataPacket(addr *net.UDPAddr, buf []byte) error {
@@ -12,7 +13,7 @@ func (l *KCPConn) handleDataPacket(addr *net.UDPAddr, buf []byte) error {
 	token := binary.LittleEndian.Uint32(buf[4:8])
 	session, err := l.getSession(addr, id, token)
 	if err != nil {
-		log.Println("[net.KCPConn] Failed to get session, error:", err)
+		log.Error().Err(err).Msg("Failed to get session")
 		return l.sendCtrlDisconnect(addr, id, token, 5) // ENET_SERVER_KICK
 	}
 	return session.OnPacket(buf, l.packetCh)

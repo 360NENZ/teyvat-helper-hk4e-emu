@@ -19,3 +19,17 @@ func (p *PlayerSocial) SetPlayerBornData(ctx *Context, id uint32) error {
 	p.NameCardId = 210001
 	return nil
 }
+
+func (p *PlayerSocial) SetBirthday(ctx *Context, birthday *pb.Birthday) error {
+	p.Lock()
+	defer p.Unlock()
+	p.Birthday = birthday
+	return nil
+}
+
+func (p *PlayerSocial) SetSignature(ctx *Context, signature string) error {
+	p.Lock()
+	defer p.Unlock()
+	p.Signature = signature
+	return nil
+}

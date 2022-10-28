@@ -2,11 +2,12 @@ package net
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -41,7 +42,7 @@ func (l *KCPConn) start() {
 	for {
 		n, addr, err := l.conn.ReadFromUDP(buf)
 		if err != nil {
-			log.Println("[net.KCPConn] Failed to read a packet from the connection, error:", err)
+			log.Error().Err(err).Msg("Failed to read from UDP")
 			break
 		}
 		l.handlePacket(addr, buf, n)
@@ -51,11 +52,11 @@ func (l *KCPConn) start() {
 func (l *KCPConn) handlePacket(addr *net.UDPAddr, buf []byte, n int) {
 	if n == 20 {
 		if err := l.handleCtrlPacket(addr, buf[:n]); err != nil {
-			log.Println("[net.KCPConn] Failed to handle ctrl packet, error:", err)
+			log.Error().Err(err).Msg("Failed to handle control packet")
 		}
 	} else if n >= 28 {
 		if err := l.handleDataPacket(addr, buf[:n]); err != nil {
-			log.Println("[net.KCPConn] Failed to handle data packet, error:", err)
+			log.Error().Err(err).Msg("Failed to handle data packet")
 		}
 	}
 }
@@ -76,7 +77,7 @@ func (l *KCPConn) createSession(addr *net.UDPAddr, token uint32) (*Session, erro
 	session.SetToken(token)
 	session.SetSendFunc(l.sendDataPacket)
 	l.sessions[session.id] = session
-	log.Printf("[net.KCPConn] Create session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
+	log.Debug().Uint32("session_id", session.id).Str("remote_addr", session.remote.String()).Msg("Session created")
 	return session, nil
 }
 
@@ -93,7 +94,7 @@ func (l *KCPConn) deleteSession(addr *net.UDPAddr, id, token uint32) (*Session, 
 		return nil, ErrSessionTokenMismatch
 	}
 	delete(l.sessions, id)
-	log.Printf("[net.KCPConn] Delete session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
+	log.Debug().Uint32("session_id", session.id).Str("remote_addr", session.remote.String()).Msg("Session deleted")
 	return session, nil
 }
 
@@ -106,7 +107,7 @@ func (l *KCPConn) updateSession(addr *net.UDPAddr, id, token uint32) (*Session, 
 		delete(l.sessions, id)
 		return nil, ErrSessionNotFound
 	}
-	log.Printf("[net.KCPConn] Update session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
+	log.Debug().Uint32("session_id", session.id).Str("remote_addr", session.remote.String()).Msg("Session updated")
 	return session, nil
 }
 
@@ -122,7 +123,6 @@ func (l *KCPConn) getSession(addr *net.UDPAddr, id, token uint32) (*Session, err
 	if session.token != token {
 		return nil, ErrSessionTokenMismatch
 	}
-	// log.Printf("[net.KCPConn] Get session session_id: 0x%x, remote_addr: %s", session.id, session.remote.String())
 	return session, nil
 }
 

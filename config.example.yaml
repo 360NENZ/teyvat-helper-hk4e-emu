@@ -1,0 +1,12 @@
+baseDomain: example.com
+httpServer:
+  addr: 0.0.0.0:8080
+gateServer:
+  - name: os_beta01
+    title: 127.0.0.1:22102
+    addr: 127.0.0.1:22102
+gameServer:
+  addr: 0.0.0.0:22102
+database:
+  driver: sqlite
+  dsn: file:data/hk4e-emu.db?cache=shared&mode=rwc

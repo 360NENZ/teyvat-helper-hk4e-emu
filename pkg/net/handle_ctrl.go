@@ -2,14 +2,14 @@ package net
 
 import (
 	"encoding/binary"
-	"encoding/hex"
 	"fmt"
-	"log"
 	"net"
+
+	"github.com/rs/zerolog/log"
 )
 
 func (l *KCPConn) handleCtrlPacket(addr *net.UDPAddr, buf []byte) (err error) {
-	log.Printf("[net.KCPConn] Handle ctrl packet: %s\n%s", addr.String(), hex.Dump(buf))
+	log.Trace().Str("addr", addr.String()).Hex("data", buf).Msg("Recv control packet")
 	typ := binary.BigEndian.Uint32(buf[0:4])
 	if typ == 0x000000FF {
 		err = l.handleCtrlConnectPsh(addr, buf)
@@ -24,7 +24,7 @@ func (l *KCPConn) handleCtrlPacket(addr *net.UDPAddr, buf []byte) (err error) {
 }
 
 func (l *KCPConn) sendCtrlPacket(addr *net.UDPAddr, buf []byte) (err error) {
-	log.Printf("[net.KCPConn] Send ctrl packet: %s\n%s", addr.String(), hex.Dump(buf))
+	log.Trace().Str("addr", addr.String()).Hex("data", buf).Msg("Send control packet")
 	_, err = l.conn.WriteToUDP(buf, addr)
 	return err
 }
@@ -43,7 +43,7 @@ func (l *KCPConn) handleCtrlConnectPsh(addr *net.UDPAddr, buf []byte) error {
 	}
 	session, err := l.createSession(addr, token)
 	if err != nil {
-		log.Println("[net.KCPConn] Failed to create session, error:", err)
+		log.Error().Err(err).Msg("Failed to create session")
 		return l.sendCtrlDisconnect(addr, conv, token, 5) // ENET_SERVER_KICK
 	}
 	return l.sendCtrlConnectAck(addr, session.id, session.token)
@@ -81,7 +81,7 @@ func (l *KCPConn) handleCtrlDisconnect(addr *net.UDPAddr, buf []byte) error {
 	token := binary.BigEndian.Uint32(buf[8:12])
 	session, err := l.deleteSession(addr, conv, token)
 	if err != nil {
-		log.Println("[net.KCPConn] Failed to delete session, error:", err)
+		log.Error().Err(err).Msg("Failed to delete session")
 		if err == ErrSessionNotFound {
 			return l.sendCtrlDisconnect(addr, conv, token, 7) // ENET_NOT_FOUND_SESSION
 		} else if err == ErrSessionTokenMismatch {

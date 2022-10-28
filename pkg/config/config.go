@@ -1,17 +1,24 @@
 package config
 
+import (
+	"io"
+	"os"
+	"path"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"gopkg.in/natefinch/lumberjack.v2"
+)
+
 type Config struct {
+	BaseDomain string             `mapstructure:"baseDomain"`
+	HTTPServer HTTPServerConfig   `mapstructure:"httpServer"`
+	GateServer []GateServerConfig `mapstructure:"gateServer"`
+	GameServer GameServerConfig   `mapstructure:"gameServer"`
 	Database   DatabaseConfig     `mapstructure:"database"`
-	GameServer GameServerConfig   `mapstructure:"game_server"`
-	GateServer []GateServerConfig `mapstructure:"gate_server"`
-	HTTPServer HTTPServerConfig   `mapstructure:"http_server"`
 }
 
-type DatabaseConfig struct {
-	DSN string `mapstructure:"dsn"`
-}
-
-type GameServerConfig struct {
+type HTTPServerConfig struct {
 	Addr string `mapstructure:"addr"`
 }
 
@@ -21,23 +28,44 @@ type GateServerConfig struct {
 	Addr  string `mapstructure:"addr"`
 }
 
-type HTTPServerConfig struct {
+type GameServerConfig struct {
 	Addr string `mapstructure:"addr"`
 }
 
+type DatabaseConfig struct {
+	Driver string `mapstructure:"driver"`
+	DSN    string `mapstructure:"dsn"`
+}
+
 var DefaultConfig = Config{
-	Database: DatabaseConfig{
-		DSN: "file:data/sqlite3.db?cache=shared&mode=rwc",
-	},
-	GameServer: GameServerConfig{
-		Addr: ":22102",
+	BaseDomain: "example.com",
+	HTTPServer: HTTPServerConfig{
+		Addr: "0.0.0.0:8080",
 	},
 	GateServer: []GateServerConfig{{
 		Name:  "os_beta01",
 		Title: "127.0.0.1:22102",
 		Addr:  "127.0.0.1:22102",
 	}},
-	HTTPServer: HTTPServerConfig{
-		Addr: ":8080",
+	GameServer: GameServerConfig{
+		Addr: "0.0.0.0:22102",
 	},
+	Database: DatabaseConfig{
+		Driver: "sqlite",
+		DSN:    "file:data/hk4e-emu.db?cache=shared&mode=rwc",
+	},
+}
+
+func init() {
+	log.Logger = log.Output(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, newRollingFile())).With().Caller().Logger()
+}
+
+func newRollingFile() io.Writer {
+	if err := os.MkdirAll("log", 0744); err != nil {
+		log.Error().Err(err).Str("path", "log").Msg("can't create log directory")
+		return nil
+	}
+	return &lumberjack.Logger{
+		Filename: path.Join("log", "hk4e-emu.log"),
+	}
 }

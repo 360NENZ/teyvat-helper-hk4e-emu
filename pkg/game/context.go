@@ -3,13 +3,38 @@ package game
 import (
 	"context"
 	"encoding/json"
-	"log"
 	"sync"
 
 	"github.com/aj3423/aproto"
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
+
+func (s *Server) Context(packet *Packet) *Context {
+	head, _ := json.Marshal(packet.head)
+	if packet.message != nil {
+		body, _ := json.Marshal(convertMessage(packet.message))
+		log.Debug().RawJSON("head", head).RawJSON("body", body).
+			Msgf("RECV <·· %5d - %5d:%s", packet.head.GetClientSequenceId(), packet.message.ProtoCommand(), packet.message.ProtoMessageType())
+	} else {
+		log.Debug().RawJSON("head", head).Str("body", aproto.Dump(packet.rawData)).
+			Msgf("RECV <·· %5d - %5d:*****", packet.head.GetClientSequenceId(), packet.command)
+	}
+	return &Context{Context: context.Background(), session: packet.session, head: packet.head}
+}
+
+func (s *Server) Send(ctx *Context, message pb.ProtoMessage) error {
+	head, _ := json.Marshal(ctx.head)
+	body, _ := json.Marshal(message)
+	log.Debug().RawJSON("head", head).RawJSON("body", body).
+		Msgf("SEND ··> %5d - %5d:%s", ctx.head.GetClientSequenceId(), message.ProtoCommand(), message.ProtoMessageType())
+	return ctx.Session().Send(ctx.head, message)
+}
+
+func (s *Server) SendFunc(ctx *Context, message pb.ProtoMessage) func(ctx *Context) error {
+	return func(ctx *Context) error { return s.Send(ctx, message) }
+}
 
 type Context struct {
 	context.Context
@@ -57,49 +82,31 @@ type UnionCmd struct {
 	Body      pb.ProtoMessage `json:"body"`
 }
 
-func (s *Server) Context(packet *Packet) *Context {
-	head, _ := json.Marshal(packet.head)
-	if packet.message != nil {
-		var v any
-		if packet.message.ProtoMessageType() == "UnionCmdNotify" {
-			failed := false
-			notify := UnionCmdNotify{}
-			for _, cmd := range packet.message.(*pb.UnionCmdNotify).CmdList {
-				id := pb.ProtoCommand(cmd.GetMessageId())
-				item := UnionCmd{
-					MessageID: id,
-					Body:      pb.ProtoCommandNewFuncMap.New(id),
-				}
-				if item.Body != nil {
-					_ = proto.Unmarshal(cmd.GetBody(), item.Body)
-					notify.CmdList = append(notify.CmdList, &item)
-				} else {
-					failed = true
-				}
+func convertMessage(message pb.ProtoMessage) any {
+	var v any
+	if message.ProtoMessageType() == "UnionCmdNotify" {
+		failed := false
+		notify := UnionCmdNotify{}
+		for _, cmd := range message.(*pb.UnionCmdNotify).CmdList {
+			id := pb.ProtoCommand(cmd.GetMessageId())
+			item := UnionCmd{
+				MessageID: id,
+				Body:      pb.ProtoCommandNewFuncMap.New(id),
 			}
-			if !failed {
-				v = notify
+			if item.Body != nil {
+				_ = proto.Unmarshal(cmd.GetBody(), item.Body)
+				notify.CmdList = append(notify.CmdList, &item)
 			} else {
-				v = packet.message
+				failed = true
 			}
-		} else {
-			v = packet.message
 		}
-		body, _ := json.Marshal(v)
-		log.Printf("[GAME] RECV <·· %5d - %5d:%s\n%s\n%s\n", packet.head.GetClientSequenceId(), packet.message.ProtoCommand(), packet.message.ProtoMessageType(), head, body)
+		if !failed {
+			v = notify
+		} else {
+			v = message
+		}
 	} else {
-		log.Printf("[GAME] RECV <·· %5d - %5d:*****\n%s\n%s", packet.head.GetClientSequenceId(), packet.command, head, aproto.Dump(packet.rawData))
+		v = message
 	}
-	return &Context{Context: context.Background(), session: packet.session, head: packet.head}
-}
-
-func (s *Server) Send(ctx *Context, message pb.ProtoMessage) error {
-	head, _ := json.Marshal(ctx.head)
-	body, _ := json.Marshal(message)
-	log.Printf("[GAME] SEND ··> %5d - %5d:%s\n%s\n%s\n", ctx.head.GetClientSequenceId(), message.ProtoCommand(), message.ProtoMessageType(), head, body)
-	return ctx.Session().Send(ctx.head, message)
-}
-
-func (s *Server) SendFunc(ctx *Context, message pb.ProtoMessage) func(ctx *Context) error {
-	return func(ctx *Context) error { return s.Send(ctx, message) }
+	return v
 }

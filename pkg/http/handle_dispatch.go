@@ -21,24 +21,24 @@ type customConfig struct {
 }
 
 func (s *Server) handleQueryRegionList() gin.HandlerFunc {
-	m := pb.QueryRegionListHttpRsp{}
+	var resp pb.QueryRegionListHttpRsp
 	for _, c := range s.config.GateServer {
-		m.RegionList = append(m.RegionList, &pb.RegionSimpleInfo{
+		resp.RegionList = append(resp.RegionList, &pb.RegionSimpleInfo{
 			Name:        c.Name,
 			Title:       c.Title,
 			Type:        "DEV_PUBLIC",
-			DispatchUrl: "https://example.com/query_cur_region/" + c.Name,
+			DispatchUrl: "https://" + s.config.BaseDomain + "/query_cur_region/" + c.Name,
 		})
 	}
-	m.ClientSecretKey = s.secret.Shared.Key()
-	m.ClientCustomConfigEncrypted, _ = json.Marshal(customConfig{
+	resp.ClientSecretKey = s.secret.Shared.Key()
+	resp.ClientCustomConfigEncrypted, _ = json.Marshal(customConfig{
 		SDKEnvironment:         "2",
 		RegionConfig:           "pm|fk|add",
 		DisableRazorChromaInit: true,
 	})
-	s.secret.Shared.Xor(m.GetClientCustomConfigEncrypted())
-	m.EnableLoginPc = true
-	b, _ := proto.Marshal(&m)
+	s.secret.Shared.Xor(resp.GetClientCustomConfigEncrypted())
+	resp.EnableLoginPc = true
+	b, _ := proto.Marshal(&resp)
 	return func(c *gin.Context) {
 		c.String(http.StatusOK, base64.StdEncoding.EncodeToString(b))
 	}
@@ -49,16 +49,16 @@ func (s *Server) handleQueryCurrentRegion() gin.HandlerFunc {
 	defaultRegion := []byte{}
 	for i, c := range s.config.GateServer {
 		addr, _ := net.ResolveUDPAddr("udp", c.Addr)
-		m := pb.QueryCurrRegionHttpRsp{}
-		m.RegionInfo = &pb.RegionInfo{
+		var resp pb.QueryCurrRegionHttpRsp
+		resp.RegionInfo = &pb.RegionInfo{
 			GateserverIp:   addr.IP.String(),
 			GateserverPort: uint32(addr.Port),
 			SecretKey:      s.secret.Shared.Key(),
 		}
-		m.ClientSecretKey = s.secret.Shared.Key()
-		m.RegionCustomConfigEncrypted, _ = json.Marshal(customConfig{})
-		s.secret.Shared.Xor(m.GetRegionCustomConfigEncrypted())
-		b, _ := proto.Marshal(&m)
+		resp.ClientSecretKey = s.secret.Shared.Key()
+		resp.RegionCustomConfigEncrypted, _ = json.Marshal(customConfig{})
+		s.secret.Shared.Xor(resp.GetRegionCustomConfigEncrypted())
+		b, _ := proto.Marshal(&resp)
 		regionMap[c.Name] = b
 		if i == 0 {
 			defaultRegion = b

@@ -39,7 +39,7 @@ func (s *Store) install(ctx context.Context) error {
 	s.db.NewCreateTable().Model((*BlockData)(nil)).IfNotExists().Exec(ctx)
 	s.db.NewCreateTable().Model((*HomeData)(nil)).IfNotExists().Exec(ctx)
 	return s.Account().CreateAccount(ctx, &Account{
-		Email:    "admin@example.com",
+		Email:    "admin@localhost",
 		Username: "admin",
 	})
 }

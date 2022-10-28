@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"os"
-	"strconv"
 
 	"github.com/teyvat-helper/hk4e-emu/pkg/ec2b"
 )
@@ -22,8 +21,6 @@ type Secret struct {
 
 func NewSecret() *Secret {
 	s := &Secret{}
-	s.Shared = ec2b.NewEc2b()
-	_ = os.WriteFile("data/secret.seed", []byte(strconv.FormatUint(s.Shared.Seed(), 10)), 0644)
 	s.Server = &PrivateKey{}
 	s.Client = make(map[string]*PublicKey)
 	rest, _ := os.ReadFile("data/secret.pem")

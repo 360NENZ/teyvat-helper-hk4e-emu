@@ -3,12 +3,12 @@ package game
 import (
 	"context"
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/config"
 	"github.com/teyvat-helper/hk4e-emu/pkg/net"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
@@ -36,6 +36,16 @@ func NewServer(cfg *config.Config) *Server {
 func (s *Server) createPlayerSession(sess *net.Session) (*PlayerSession, error) {
 	session := NewPlayerSession(sess, s.secret, s)
 	s.sessions[session.ID()] = session
+	log.Debug().Uint32("session_id", session.ID()).Str("remote_addr", session.Remote().String()).Msg("PlayerSession created")
+	return session, nil
+}
+
+func (s *Server) deletePlayerSession(ctx context.Context, session *PlayerSession) (*PlayerSession, error) {
+	if _, err := session.UpdatePlayer(ctx); err != nil {
+		return session, err
+	}
+	delete(s.sessions, session.ID())
+	log.Debug().Uint32("session_id", session.ID()).Str("remote_addr", session.Remote().String()).Msg("PlayerSession deleted")
 	return session, nil
 }
 
@@ -66,16 +76,23 @@ func (s *Server) Start() error {
 	select {}
 }
 
-func (s *Server) UpdateSeed() {
-	b, _ := os.ReadFile("data/secret.seed")
-	seed, _ := strconv.ParseUint(string(b), 10, 64)
+func (s *Server) LoadSecret() error {
+	b, err := os.ReadFile("data/secret.seed")
+	if err != nil {
+		return err
+	}
+	seed, err := strconv.ParseUint(string(b), 10, 64)
+	if err != nil {
+		return err
+	}
 	s.secret.Shared.SetSeed(seed)
+	return nil
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	for _, session := range s.sessions {
-		if _, err := session.UpdatePlayer(ctx); err != nil {
-			log.Println("[GAME] Failed to update player, error:", err)
+		if _, err := s.deletePlayerSession(ctx, session); err != nil {
+			log.Error().Err(err).Msg("Failed to update player")
 		}
 	}
 	return nil

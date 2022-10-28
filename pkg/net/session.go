@@ -2,8 +2,9 @@ package net
 
 import (
 	"fmt"
-	"log"
 	"net"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Session struct {
@@ -31,11 +32,12 @@ func newSession(addr *net.UDPAddr, id uint32) *Session {
 
 func (s *Session) output(buf []byte, size int) {
 	if err := s.sendFn(s.remote, buf[:size]); err != nil {
-		log.Println("[net.Session] Failed to send session packet, error:", err)
+		log.Error().Err(err).Msg("Failed to send packet")
 	}
 }
 
-func (s *Session) ID() uint32 { return s.id }
+func (s *Session) ID() uint32           { return s.id }
+func (s *Session) Remote() *net.UDPAddr { return s.remote }
 
 func (s *Session) SetToken(token uint32) {
 	s.token = token

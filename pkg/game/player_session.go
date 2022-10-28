@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/hex"
-	"log"
 
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/net"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 	"github.com/teyvat-helper/hk4e-proto/pb"
@@ -72,15 +72,15 @@ func (s *PlayerSession) handlePacket(packet *net.Packet, onPacket func(*Packet))
 	}
 	l := len(data)
 	if l < 12 {
-		log.Println("[GAME] packet too short:", l)
+		log.Warn().Msgf("packet too short: %d", l)
 		return
 	}
 	if data[0] != 0x45 || data[1] != 0x67 {
-		log.Println("[GAME] invalid packet prefix:", hex.EncodeToString(data[:2]))
+		log.Warn().Msgf("invalid packet prefix: %s", hex.EncodeToString(data[:2]))
 		return
 	}
 	if data[l-2] != 0x89 || data[l-1] != 0xAB {
-		log.Println("[GAME] invalid packet suffix:", hex.EncodeToString(data[l-2:l]))
+		log.Warn().Msgf("invalid packet suffix: %s", hex.EncodeToString(data[l-2:]))
 		return
 	}
 	buf := bytes.NewBuffer(data[2 : l-2])
@@ -88,7 +88,7 @@ func (s *PlayerSession) handlePacket(packet *net.Packet, onPacket func(*Packet))
 	headLength := binary.BigEndian.Uint16(buf.Next(2))
 	bodyLength := binary.BigEndian.Uint32(buf.Next(4))
 	if uint32(l) != 12+uint32(headLength)+bodyLength {
-		log.Println("[GAME] invalid packet length:", l)
+		log.Warn().Msgf("invalid packet length: %d", l)
 		return
 	}
 	head := &pb.PacketHead{}

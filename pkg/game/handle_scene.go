@@ -2,20 +2,16 @@ package game
 
 import (
 	"fmt"
-	"log"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 // send PlayerEnterSceneNotify
 //
 //	flow:
-//		*SEND ··> PlayerEnterSceneNotify
-//
-//	todo:
-//		SEND ··> Unk3100_MDGBODAFNDA
-//		SEND ··> Unk3000_KEJGDDMMBLP
+//		SEND ··> PlayerEnterSceneNotify
 func (s *Server) SendPlayerEnterSceneNotify(ctx *Context) error {
 	player := ctx.Session().GetPlayer()
 	var notify pb.PlayerEnterSceneNotify
@@ -44,20 +40,12 @@ func (s *Server) SendLeaveSceneRsp(ctx *Context) error {
 // handle SceneInitFinishReq
 //
 //	flow:
-//		*RECV <·· SceneInitFinishReq
+//		RECV <·· SceneInitFinishReq
 //		SEND ··> [asyncSendSceneData]
-//		*SEND ··> SceneInitFinishRsp
-//
-//	todo:
-//		SEND ··> SyncTeamEntityNotify
-//		SEND ··> AllMarkPointNotify
-//		SEND ··> SyncScenePlayTeamEntityNotify
-//		SEND ··> ScenePlayBattleInfoListNotify
-//		SEND ··> Unk3000_NNPCGEAHNHM
-//		SEND ··> Unk2700_HBOFACHAGIF_ServerNotify
+//		SEND ··> SceneInitFinishRsp
 func (s *Server) HandleSceneInitFinishReq(ctx *Context, req *pb.SceneInitFinishReq) error {
 	if err := s.handleSceneInitFinishReq(ctx, req); err != nil {
-		log.Printf("[GAME] Failed to handle SceneInitFinishReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle SceneInitFinishReq")
 		return s.Send(ctx, &pb.SceneInitFinishRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendSceneInitFinishRsp(ctx, req.GetEnterSceneToken())
@@ -73,7 +61,7 @@ func (s *Server) SendSceneInitFinishRsp(ctx *Context, token uint32) error {
 // send SceneEntityAppearNotify
 //
 //	flow:
-//		*SEND ··> SceneEntityAppearNotify
+//		SEND ··> SceneEntityAppearNotify
 func (s *Server) SendSceneEntityAppearNotify(ctx *Context, appearType pb.VisionType, entityList ...*pb.SceneEntityInfo) error {
 	var notify pb.SceneEntityAppearNotify
 	notify.AppearType = appearType
@@ -84,7 +72,7 @@ func (s *Server) SendSceneEntityAppearNotify(ctx *Context, appearType pb.VisionT
 // send SceneEntityDisappearNotify
 //
 //	flow:
-//		*SEND ··> SceneEntityDisappearNotify
+//		SEND ··> SceneEntityDisappearNotify
 func (s *Server) SendSceneEntityDisappearNotify(ctx *Context, disappearType pb.VisionType, entityList ...uint32) error {
 	var notify pb.SceneEntityDisappearNotify
 	notify.DisappearType = disappearType
@@ -116,12 +104,24 @@ func (s *Server) SendScenePlayerLocationNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle GetScenePointReq
+//
+//	flow:
+//		RECV <·· GetScenePointReq
+//		SEND ··> GetScenePointRsp
 func (s *Server) HandleGetScenePointReq(ctx *Context, req *pb.GetScenePointReq) error {
-	panic("not implement")
+	return s.SendGetScenePointRsp(ctx, req.GetSceneId(), req.GetBelongUid())
 }
-
-func (s *Server) SendGetScenePointRsp(ctx *Context) error {
-	panic("not implement")
+func (s *Server) SendGetScenePointRsp(ctx *Context, sceneId, belongId uint32) error {
+	var resp pb.GetScenePointRsp
+	switch sceneId {
+	case 3:
+		resp.NotExploredDungeonEntryList = []uint32{1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 1001}
+	case 5, 6, 7:
+	case 9:
+		resp.UnlockAreaList = []uint32{403}
+	}
+	return s.Send(ctx, &resp)
 }
 
 func (s *Server) SendEnterTransPointRegionNotify(ctx *Context) error {
@@ -148,12 +148,42 @@ func (s *Server) SendEntityJumpNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle GetSceneAreaReq
+//
+//	flow:
+//		RECV <·· GetSceneAreaReq
+//		SEND ··> GetSceneAreaRsp
 func (s *Server) HandleGetSceneAreaReq(ctx *Context, req *pb.GetSceneAreaReq) error {
-	panic("not implement")
+	return s.SendGetSceneAreaRsp(ctx, req.GetSceneId(), req.GetBelongUid())
 }
-
-func (s *Server) SendGetSceneAreaRsp(ctx *Context) error {
-	panic("not implement")
+func (s *Server) SendGetSceneAreaRsp(ctx *Context, sceneId, belongId uint32) error {
+	var resp pb.GetSceneAreaRsp
+	switch belongId {
+	case 3:
+		resp.CityInfoList = []*pb.CityInfo{
+			{CityId: 1, Level: 1},
+			{CityId: 2, Level: 1},
+			{CityId: 3, Level: 1},
+			{CityId: 4, Level: 1},
+			{CityId: 99, Level: 1},
+			{CityId: 100, Level: 1},
+			{CityId: 101, Level: 1},
+			{CityId: 102, Level: 1},
+		}
+	case 5, 6, 7:
+	case 9:
+		resp.CityInfoList = []*pb.CityInfo{
+			{CityId: 1, Level: 1},
+			{CityId: 2, Level: 1},
+			{CityId: 3, Level: 1},
+			{CityId: 4, Level: 1},
+			{CityId: 99, Level: 1},
+			{CityId: 100, Level: 1},
+			{CityId: 101, Level: 1},
+			{CityId: 102, Level: 1},
+		}
+	}
+	return s.Send(ctx, &resp)
 }
 
 func (s *Server) SendSceneAreaUnlockNotify(ctx *Context) error {
@@ -192,12 +222,16 @@ func (s *Server) SendSceneForceLockNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// HandleEnterWorldAreaReq handle EnterWorldAreaReq
+//
+//	flow:
+//		RECV <·· EnterWorldAreaReq
+//		SEND ··> EnterWorldAreaRsp
 func (s *Server) HandleEnterWorldAreaReq(ctx *Context, req *pb.EnterWorldAreaReq) error {
-	panic("not implement")
+	return s.SendEnterWorldAreaRsp(ctx, req.GetAreaType(), req.GetAreaId())
 }
-
-func (s *Server) SendEnterWorldAreaRsp(ctx *Context) error {
-	panic("not implement")
+func (s *Server) SendEnterWorldAreaRsp(ctx *Context, typ, id uint32) error {
+	return s.Send(ctx, &pb.EnterWorldAreaRsp{AreaType: typ, AreaId: id})
 }
 
 func (s *Server) HandleEntityForceSyncReq(ctx *Context, req *pb.EntityForceSyncReq) error {
@@ -323,26 +357,26 @@ func (s *Server) SendClientPauseNotify(ctx *Context) error {
 // send PlayerEnterSceneInfoNotify
 //
 //	flow:
-//		*SEND ··> PlayerEnterSceneInfoNotify
+//		SEND ··> PlayerEnterSceneInfoNotify
 func (s *Server) SendPlayerEnterSceneInfoNotify(ctx *Context) error {
 	player := ctx.Session().GetPlayer()
 	var notify pb.PlayerEnterSceneInfoNotify
 	notify.MpLevelEntityInfo = &pb.MPLevelEntityInfo{
-		AuthorityPeerId: 1,
-		EntityId:        11<<24 | 1,
+		AuthorityPeerId: uint32(player.ID),
+		EntityId:        uint32(pb.ProtEntityType_PROT_ENTITY_MP_LEVEL)<<24 | 1,
 		AbilityInfo:     &pb.AbilitySyncStateInfo{},
 	}
-	notify.CurAvatarEntityId = 1<<24 | 1
+	notify.CurAvatarEntityId = uint32(pb.ProtEntityType_PROT_ENTITY_AVATAR)<<24 | 1
 	notify.AvatarEnterInfo = []*pb.AvatarEnterSceneInfo{{
 		AvatarGuid:        uint64(player.ID)<<32 | 1, // AvatarGUID
-		AvatarEntityId:    1<<24 | 1,
+		AvatarEntityId:    uint32(pb.ProtEntityType_PROT_ENTITY_AVATAR)<<24 | 1,
 		AvatarAbilityInfo: &pb.AbilitySyncStateInfo{},
 		WeaponGuid:        uint64(player.ID)<<32 | 2, // WeaponGUID
-		WeaponEntityId:    6<<24 | 1,
+		WeaponEntityId:    uint32(pb.ProtEntityType_PROT_ENTITY_WEAPON)<<24 | 1,
 		WeaponAbilityInfo: &pb.AbilitySyncStateInfo{},
 	}}
 	notify.TeamEnterInfo = &pb.TeamEnterSceneInfo{
-		TeamEntityId:        9<<24 | 1,
+		TeamEntityId:        uint32(pb.ProtEntityType_PROT_ENTITY_TEAM)<<24 | 1,
 		TeamAbilityInfo:     &pb.AbilitySyncStateInfo{},
 		AbilityControlBlock: &pb.AbilityControlBlock{},
 	}
@@ -405,9 +439,9 @@ func (s *Server) SendSceneTimeNotify(ctx *Context) error {
 // handle EnterSceneReadyReq
 //
 //	flow:
-//		*RECV <·· EnterSceneReadyReq
-//		*SEND ··> EnterSceneReadyRsp
-//		*SEND ··> EnterScenePeerNotify
+//		RECV <·· EnterSceneReadyReq
+//		SEND ··> EnterSceneReadyRsp
+//		SEND ··> EnterScenePeerNotify
 func (s *Server) HandleEnterSceneReadyReq(ctx *Context, req *pb.EnterSceneReadyReq) error {
 	return s.SendEnterSceneReadyRsp(ctx, req.GetEnterSceneToken())
 }
@@ -423,7 +457,7 @@ func (s *Server) SendEnterSceneReadyRsp(ctx *Context, token uint32) error {
 // send EnterScenePeerNotify
 //
 //	flow:
-//		*SEND ··> EnterScenePeerNotify
+//		SEND ··> EnterScenePeerNotify
 func (s *Server) SendEnterScenePeerNotify(ctx *Context, token uint32) error {
 	var notify pb.EnterScenePeerNotify
 	notify.PeerId = 1
@@ -436,18 +470,18 @@ func (s *Server) SendEnterScenePeerNotify(ctx *Context, token uint32) error {
 // handle EnterSceneDoneReq
 //
 //	flow:
-//		*RECV <·· EnterSceneDoneReq
+//		RECV <·· EnterSceneDoneReq
 //		SEND ··> SceneAreaWeatherNotify
-//		*SEND ··> SceneEntityAppearNotify
-//		*SEND ··> SceneEntityAppearNotify
+//		SEND ··> SceneEntityAppearNotify
+//		SEND ··> SceneEntityAppearNotify
 //		SEND ··> PlatformStartRouteNotify
 //		SEND ··> PlatformStartRouteNotify
 //		SEND ··> PlayerEyePointStateNotify
-//		*SEND ··> EnterSceneDoneRsp
+//		SEND ··> EnterSceneDoneRsp
 //		SEND ··> GroupSuiteNotify
 func (s *Server) HandleEnterSceneDoneReq(ctx *Context, req *pb.EnterSceneDoneReq) error {
 	if err := s.handleEnterSceneDoneReq(ctx, req); err != nil {
-		log.Printf("[GAME] Failed to handle EnterSceneDoneReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle EnterSceneDoneReq")
 		return s.Send(ctx, &pb.EnterSceneDoneRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendEnterSceneDoneRsp(ctx, req.GetEnterSceneToken())
@@ -564,18 +598,18 @@ func (s *Server) SendWorldPlayerInfoNotify(ctx *Context) error {
 // handle PostEnterSceneReq
 //
 //	flow:
-//		*RECV <·· PostEnterSceneReq
+//		RECV <·· PostEnterSceneReq
 //		SEND ··> ServerCondMeetQuestListUpdateNotify
 //		SEND ··> FinishedParentQuestUpdateNotify
 //		SEND ··> QuestProgressUpdateNotify
 //		SEND ··> QuestListUpdateNotify
-//		*SEND ··> PostEnterSceneRsp
+//		SEND ··> PostEnterSceneRsp
 //		SEND ··> AnchorPointDataNotify
 //		SEND ··> OneofGatherPointDetectorDataNotify
 //		SEND ··> ChatChannelDataNotify
 func (s *Server) HandlePostEnterSceneReq(ctx *Context, req *pb.PostEnterSceneReq) error {
 	if err := s.handlePostEnterSceneReq(ctx, req); err != nil {
-		log.Printf("[GAME] Failed to handle PostEnterSceneReq: %v", err)
+		log.Error().Err(err).Msg("Failed to handle PostEnterSceneReq")
 		return s.Send(ctx, &pb.PostEnterSceneRsp{Retcode: int32(pb.Retcode_RET_FAIL)})
 	}
 	return s.SendPostEnterSceneRsp(ctx, req.GetEnterSceneToken())
@@ -763,12 +797,49 @@ func (s *Server) SendShowClientTutorialNotify(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle GetMapAreaReq
+//
+//	flow:
+//		RECV <·· GetMapAreaReq
+//		SEND ··> GetMapAreaRsp
 func (s *Server) HandleGetMapAreaReq(ctx *Context, req *pb.GetMapAreaReq) error {
-	panic("not implement")
+	return s.SendGetMapAreaRsp(ctx)
 }
-
 func (s *Server) SendGetMapAreaRsp(ctx *Context) error {
-	panic("not implement")
+	return s.Send(ctx, &pb.GetMapAreaRsp{MapAreaInfoList: []*pb.MapAreaInfo{
+		{MapAreaId: 1, IsOpen: true},
+		{MapAreaId: 2, IsOpen: true},
+		{MapAreaId: 3, IsOpen: true},
+		{MapAreaId: 4, IsOpen: true},
+		{MapAreaId: 5},
+		{MapAreaId: 6, IsOpen: true},
+		{MapAreaId: 7},
+		{MapAreaId: 8},
+		{MapAreaId: 9},
+		{MapAreaId: 10, IsOpen: true},
+		{MapAreaId: 11, IsOpen: true},
+		{MapAreaId: 12, IsOpen: true},
+		{MapAreaId: 13, IsOpen: true},
+		{MapAreaId: 14, IsOpen: true},
+		{MapAreaId: 15, IsOpen: true},
+		{MapAreaId: 16},
+		{MapAreaId: 17, IsOpen: true},
+		{MapAreaId: 18, IsOpen: true},
+		{MapAreaId: 20, IsOpen: true},
+		{MapAreaId: 21, IsOpen: true},
+		{MapAreaId: 22, IsOpen: true},
+		{MapAreaId: 23, IsOpen: true},
+		{MapAreaId: 24, IsOpen: true},
+		{MapAreaId: 25, IsOpen: true},
+		{MapAreaId: 30, IsOpen: true},
+		{MapAreaId: 31, IsOpen: true},
+		{MapAreaId: 32, IsOpen: true},
+		{MapAreaId: 33, IsOpen: true},
+		{MapAreaId: 36, IsOpen: true},
+		{MapAreaId: 37, IsOpen: true},
+		{MapAreaId: 38, IsOpen: true},
+		{MapAreaId: 39, IsOpen: true},
+	}})
 }
 
 func (s *Server) SendMapAreaChangeNotify(ctx *Context) error {
