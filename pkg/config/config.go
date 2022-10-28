@@ -1,9 +1,11 @@
 package config
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -66,6 +68,6 @@ func newRollingFile() io.Writer {
 		return nil
 	}
 	return &lumberjack.Logger{
-		Filename: path.Join("log", "hk4e-emu.log"),
+		Filename: path.Join("log", fmt.Sprintf("hk4e-emu-%s.log", time.Now().Format("2006-01-02-15-04-05"))),
 	}
 }

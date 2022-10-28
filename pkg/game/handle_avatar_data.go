@@ -9,8 +9,8 @@ func getAvatarEntityInfo(player *Player, avatar *pb.AvatarBin) *pb.SceneEntityIn
 		EntityType: pb.ProtEntityType_PROT_ENTITY_AVATAR,
 		EntityId:   uint32(pb.ProtEntityType_PROT_ENTITY_AVATAR)<<24 | 1,
 		MotionInfo: &pb.MotionInfo{
-			Pos:   &pb.Vector{X: 2747.562, Y: 194.633, Z: -1719.386},
-			Rot:   &pb.Vector{Y: 307},
+			Pos:   player.Scene().GetPos(),
+			Rot:   player.Scene().GetRot(),
 			Speed: &pb.Vector{},
 		},
 		AnimatorParaList: []*pb.AnimatorParameterValueInfoPair{{}},

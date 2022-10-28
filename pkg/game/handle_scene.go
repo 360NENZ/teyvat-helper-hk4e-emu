@@ -14,15 +14,16 @@ import (
 //		SEND ··> PlayerEnterSceneNotify
 func (s *Server) SendPlayerEnterSceneNotify(ctx *Context) error {
 	player := ctx.Session().GetPlayer()
+	scene := player.Scene()
 	var notify pb.PlayerEnterSceneNotify
 	notify.EnterSceneToken = 1 // TODO: random token
 	notify.IsFirstLoginEnterScene = true
 	notify.TargetUid = uint32(player.ID)
 	notify.SceneTagIdList = []uint32{102, 107, 113, 117, 125, 134, 139, 141, 1091, 1094, 1095, 1099, 1101, 1103, 1105, 1110, 1120, 1122, 1125, 1127, 1129, 1131, 1133, 1135, 1137, 1138, 1140, 1143, 1146, 1165, 1168}
-	notify.Pos = &pb.Vector{X: 2747.562, Y: 194.633, Z: -1719.386}
+	notify.Pos = scene.GetPos()
 	notify.Type = pb.EnterType_ENTER_SELF
 	notify.SceneBeginTime = uint64(time.Now().UnixMilli())
-	notify.SceneId = 3
+	notify.SceneId = scene.GetMyCurSceneId()
 	notify.WorldType = 1
 	notify.EnterReason = 1
 	notify.SceneTransaction = fmt.Sprintf("%d-%d-%d-%d", 3, player.ID, time.Now().Unix(), 10000)
@@ -100,7 +101,7 @@ func (s *Server) SendSceneEntityMoveNotify(ctx *Context) error {
 	panic("not implement")
 }
 
-func (s *Server) SendScenePlayerLocationNotify(ctx *Context) error {
+func (s *Server) SendScenePlayerLocationNotify(ctx *Context, notify *pb.ScenePlayerLocationNotify) error {
 	panic("not implement")
 }
 
@@ -114,9 +115,16 @@ func (s *Server) HandleGetScenePointReq(ctx *Context, req *pb.GetScenePointReq) 
 }
 func (s *Server) SendGetScenePointRsp(ctx *Context, sceneId, belongId uint32) error {
 	var resp pb.GetScenePointRsp
+	resp.SceneId = sceneId
 	switch sceneId {
 	case 3:
 		resp.NotExploredDungeonEntryList = []uint32{1, 2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 1001}
+		if belongId == 1 {
+			for i := 1; i < 79; i++ {
+				resp.UnlockAreaList = append(resp.UnlockAreaList, uint32(i))
+			}
+			resp.UnlockedPointList = []uint32{3, 6, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, 29, 33, 34, 35, 36, 37, 57, 58, 59, 60, 61, 69, 72, 73, 74, 75, 76, 77, 78, 79, 81, 82, 84, 85, 86, 87, 91, 92, 93, 95, 96, 97, 99, 100, 103, 104, 105, 114, 116, 121, 122, 127, 128, 152, 153, 154, 155, 156, 162, 165, 166, 167, 168, 180, 181, 182, 197, 200, 204, 205, 206, 208, 209, 210, 211, 212, 213, 214, 222, 225, 228, 234, 235, 236, 241, 242, 244, 245, 246, 296, 298, 301, 302, 304, 305, 306, 331, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 293, 307, 314, 318, 319, 320, 321, 322, 316, 324, 325, 326, 327, 328, 329, 330, 332, 365, 366, 380, 381, 382, 383, 384, 432, 435, 462, 463, 464, 465, 471, 472, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 575, 586, 587, 588, 589, 598, 604, 605, 606, 615, 616, 676, 442, 443, 444, 445, 446, 438, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 555, 557, 558, 626, 653, 629, 517, 518, 519, 577, 599, 602, 603, 612, 623, 625, 652, 655, 665, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 666, 667, 668, 691, 702, 703, 706}
+		}
 	case 5, 6, 7:
 	case 9:
 		resp.UnlockAreaList = []uint32{403}
@@ -133,7 +141,7 @@ func (s *Server) SendExitTransPointRegionNotify(ctx *Context) error {
 }
 
 func (s *Server) SendScenePointUnlockNotify(ctx *Context) error {
-	panic("not implement")
+	return s.Send(ctx, &pb.ScenePointUnlockNotify{SceneId: 3, PointList: []uint32{}})
 }
 
 func (s *Server) HandleSceneTransToPointReq(ctx *Context, req *pb.SceneTransToPointReq) error {
@@ -158,7 +166,8 @@ func (s *Server) HandleGetSceneAreaReq(ctx *Context, req *pb.GetSceneAreaReq) er
 }
 func (s *Server) SendGetSceneAreaRsp(ctx *Context, sceneId, belongId uint32) error {
 	var resp pb.GetSceneAreaRsp
-	switch belongId {
+	resp.SceneId = sceneId
+	switch sceneId {
 	case 3:
 		resp.CityInfoList = []*pb.CityInfo{
 			{CityId: 1, Level: 1},
@@ -169,6 +178,11 @@ func (s *Server) SendGetSceneAreaRsp(ctx *Context, sceneId, belongId uint32) err
 			{CityId: 100, Level: 1},
 			{CityId: 101, Level: 1},
 			{CityId: 102, Level: 1},
+		}
+		if belongId == 1 {
+			for i := 1; i < 79; i++ {
+				resp.AreaIdList = append(resp.AreaIdList, uint32(i))
+			}
 		}
 	case 5, 6, 7:
 	case 9:
@@ -187,7 +201,7 @@ func (s *Server) SendGetSceneAreaRsp(ctx *Context, sceneId, belongId uint32) err
 }
 
 func (s *Server) SendSceneAreaUnlockNotify(ctx *Context) error {
-	panic("not implement")
+	return s.Send(ctx, &pb.SceneAreaUnlockNotify{SceneId: 3, AreaList: []uint32{}})
 }
 
 func (s *Server) HandleSceneEntityDrownReq(ctx *Context, req *pb.SceneEntityDrownReq) error {
@@ -215,7 +229,7 @@ func (s *Server) SendSceneDestroyEntityRsp(ctx *Context) error {
 }
 
 func (s *Server) SendSceneForceUnlockNotify(ctx *Context) error {
-	panic("not implement")
+	return s.Send(ctx, &pb.SceneForceUnlockNotify{})
 }
 
 func (s *Server) SendSceneForceLockNotify(ctx *Context) error {
@@ -571,12 +585,21 @@ func (s *Server) SendSceneWeatherForcastRsp(ctx *Context) error {
 	panic("not implement")
 }
 
+// handle MarkMapReq
+//
+//	flow:
+//		RECV <·· MarkMapReq
+//		SEND ··> MarkMapRsp
 func (s *Server) HandleMarkMapReq(ctx *Context, req *pb.MarkMapReq) error {
-	panic("not implement")
+	return s.SendMarkMapRsp(ctx, req.GetMark().GetPos())
 }
-
-func (s *Server) SendMarkMapRsp(ctx *Context) error {
-	panic("not implement")
+func (s *Server) SendMarkMapRsp(ctx *Context, pos *pb.Vector) error {
+	if err := s.Send(ctx, &pb.MarkMapRsp{}); err != nil {
+		return err
+	}
+	pos.Y = 512
+	ctx.Session().GetPlayer().Scene().SetPos(pos)
+	return s.SendPlayerEnterSceneNotify(ctx)
 }
 
 func (s *Server) SendAllMarkPointNotify(ctx *Context) error {

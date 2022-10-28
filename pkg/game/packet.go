@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"reflect"
+	"runtime/debug"
 
 	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-proto/pb"
@@ -19,7 +20,7 @@ type Packet struct {
 func (s *Server) onPacket(packet *Packet) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Trace().Err(fmt.Errorf("panic: %s", r)).Str("type", reflect.TypeOf(packet.message).Elem().String()).Msg("Failed to handle packet")
+			log.Trace().Err(fmt.Errorf("panic: %s", r)).Str("stack", string(debug.Stack())).Str("type", reflect.TypeOf(packet.message).Elem().String()).Msg("Failed to handle packet")
 		}
 	}()
 

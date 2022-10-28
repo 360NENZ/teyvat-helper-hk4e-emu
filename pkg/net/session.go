@@ -26,6 +26,7 @@ func newSession(addr *net.UDPAddr, id uint32) *Session {
 	}
 	session.kcp = NewKCP(id, session.output)
 	session.kcp.SetMtu(1200)
+	session.kcp.WndSize(256, 256)
 	session.kcp.NoDelay(1, 10, 2, 1)
 	return session
 }
@@ -62,10 +63,10 @@ func (s *Session) OnPacket(buf []byte, ch chan<- *Packet) error {
 	return nil
 }
 
-func (s *Session) Send(buf []byte) error {
+func (s *Session) Send(buf []byte, flush ...bool) error {
 	if ret := s.kcp.Send(buf); ret < 0 {
 		return fmt.Errorf("kcp send error %d", ret)
 	}
-	s.kcp.flush(false)
+	s.kcp.Update()
 	return nil
 }

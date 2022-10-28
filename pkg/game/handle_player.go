@@ -2,7 +2,6 @@ package game
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -97,8 +96,14 @@ func (s *Server) HandlePlayerLoginReq(ctx *Context, req *pb.PlayerLoginReq) erro
 	return s.SendPlayerLoginRsp(ctx)
 }
 func (s *Server) handlePlayerLoginReq(ctx *Context, req *pb.PlayerLoginReq) error {
-	if ctx.Session().GetPlayer().Avatar().GetChooseAvatarGuid() == 0 {
-		return s.SendDoSetPlayerBornDataNotify(ctx)
+	player := ctx.Session().GetPlayer()
+	if player.Avatar().GetChooseAvatarGuid() == 0 {
+		if player.ID != 1 {
+			return s.SendDoSetPlayerBornDataNotify(ctx)
+		}
+		if err := player.SetPlayerBornData(ctx, 10000005, "admin"); err != nil {
+			return err
+		}
 	}
 	if err := s.AsyncSendPlayerData(ctx); err != nil {
 		return err
@@ -130,9 +135,10 @@ func (s *Server) SendPlayerLogoutNotify(ctx *Context) error {
 func (s *Server) SendPlayerDataNotify(ctx *Context) error {
 	player := ctx.Session().GetPlayer()
 	var notify pb.PlayerDataNotify
-	notify.NickName = player.Basic().GetNickname()
-	notify.ServerTime = uint64(time.Now().UnixMilli())
 	notify.RegionId = 50
+	notify.ServerTime = uint64(time.Now().UnixMilli())
+	notify.NickName = player.Basic().GetNickname()
+	notify.IsFirstLoginToday = true
 	notify.PropMap = PropMap{
 		PropType_PROP_IS_SPRING_AUTO_USE:              1,
 		PropType_PROP_SPRING_AUTO_USE_PERCENT:         50,
@@ -212,18 +218,9 @@ func (s *Server) HandleSetPlayerBornDataReq(ctx *Context, req *pb.SetPlayerBornD
 	return s.SendSetPlayerBornDataRsp(ctx)
 }
 func (s *Server) handleSetPlayerBornDataReq(ctx *Context, req *pb.SetPlayerBornDataReq) error {
-	id, name := req.GetAvatarId(), req.GetNickName()
-	if id != 10000005 && id != 10000007 {
-		return errors.New("bad avatar id")
-	}
 	player := ctx.Session().GetPlayer()
-	if err := player.Basic().SetPlayerBornData(ctx, id, name); err != nil {
-		return err
-	}
-	if err := player.Avatar().SetPlayerBornData(ctx, id); err != nil {
-		return err
-	}
-	if err := player.Social().SetPlayerBornData(ctx, id); err != nil {
+	id, name := req.GetAvatarId(), req.GetNickName()
+	if err := player.SetPlayerBornData(ctx, id, name); err != nil {
 		return err
 	}
 	return s.AsyncSendPlayerData(ctx)

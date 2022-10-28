@@ -18,7 +18,8 @@ func (s *Server) AsyncSendSceneData(ctx *Context) error {
 		s.SendPlayerEnterSceneInfoNotify,
 		s.SendSceneTeamUpdateNotify,
 
-		s.SendFunc(ctx, &pb.SceneForceUnlockNotify{}),
+		s.SendSceneForceUnlockNotify,
+
 		s.SendFunc(ctx, &pb.HostPlayerNotify{
 			HostUid:    uint32(player.ID),
 			HostPeerId: 1,
