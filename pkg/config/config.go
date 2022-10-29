@@ -25,9 +25,10 @@ type HTTPServerConfig struct {
 }
 
 type GateServerConfig struct {
-	Name  string `mapstructure:"name"`
-	Title string `mapstructure:"title"`
-	Addr  string `mapstructure:"addr"`
+	Name        string `mapstructure:"name"`
+	Title       string `mapstructure:"title"`
+	Addr        string `mapstructure:"addr"`
+	DispatchUrl string `mapstructure:"dispatchUrl"`
 }
 
 type GameServerConfig struct {

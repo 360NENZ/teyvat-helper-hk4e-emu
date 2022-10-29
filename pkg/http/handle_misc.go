@@ -8,7 +8,12 @@ import (
 )
 
 func (s *Server) handleDefault(c *gin.Context) {
-	c.String(http.StatusOK, "ok")
+	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+		"account_type": 1,
+		"ip_info": gin.H{
+			"country_code": "us",
+		},
+	}))
 }
 
 func (s *Server) handlePing(c *gin.Context) {

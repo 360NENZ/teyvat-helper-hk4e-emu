@@ -5,6 +5,9 @@ gateServer:
   - name: os_beta01
     title: 127.0.0.1:22102
     addr: 127.0.0.1:22102
+  - name: os_beta02
+    title: 127.0.0.1:18101
+    dispatchUrl: http://127.0.0.1:18401/query_cur_region
 gameServer:
   addr: 0.0.0.0:22102
 database:

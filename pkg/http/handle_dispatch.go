@@ -23,12 +23,17 @@ type customConfig struct {
 func (s *Server) handleQueryRegionList() gin.HandlerFunc {
 	var resp pb.QueryRegionListHttpRsp
 	for _, c := range s.config.GateServer {
-		resp.RegionList = append(resp.RegionList, &pb.RegionSimpleInfo{
-			Name:        c.Name,
-			Title:       c.Title,
-			Type:        "DEV_PUBLIC",
-			DispatchUrl: "https://" + s.config.BaseDomain + "/query_cur_region/" + c.Name,
-		})
+		info := &pb.RegionSimpleInfo{
+			Name:  c.Name,
+			Title: c.Title,
+			Type:  "DEV_PUBLIC",
+		}
+		if c.DispatchUrl != "" {
+			info.DispatchUrl = c.DispatchUrl
+		} else {
+			info.DispatchUrl = "http://" + s.config.BaseDomain + "/query_cur_region/" + c.Name
+		}
+		resp.RegionList = append(resp.RegionList, info)
 	}
 	resp.ClientSecretKey = s.secret.Shared.Key()
 	resp.ClientCustomConfigEncrypted, _ = json.Marshal(customConfig{
@@ -48,6 +53,9 @@ func (s *Server) handleQueryCurrentRegion() gin.HandlerFunc {
 	regionMap := map[string][]byte{}
 	defaultRegion := []byte{}
 	for i, c := range s.config.GateServer {
+		if c.DispatchUrl != "" {
+			continue
+		}
 		addr, _ := net.ResolveUDPAddr("udp", c.Addr)
 		var resp pb.QueryCurrRegionHttpRsp
 		resp.RegionInfo = &pb.RegionInfo{
