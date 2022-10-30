@@ -131,7 +131,7 @@ func (s *Server) handleSDKShieldLogin(c *gin.Context) {
 		return
 	}
 	account, err := s.serviceShieldLogin(c, req.Account, "")
-	if err == sql.ErrNoRows {
+	if err == sql.ErrNoRows && s.config.AutoSignUp {
 		account, err = s.serviceCreateAccount(c, req.Account, "")
 	}
 	if err != nil {

@@ -14,6 +14,7 @@ import (
 
 type Config struct {
 	BaseDomain string             `mapstructure:"baseDomain"`
+	AutoSignUp bool               `mapstructure:"autoSignUp"`
 	HTTPServer HTTPServerConfig   `mapstructure:"httpServer"`
 	GateServer []GateServerConfig `mapstructure:"gateServer"`
 	GameServer GameServerConfig   `mapstructure:"gameServer"`

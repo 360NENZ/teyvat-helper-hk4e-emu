@@ -27,12 +27,12 @@ func (s *PlayerSession) TokenLogin(ctx context.Context, id int64, token string) 
 }
 
 func (s *PlayerSession) CheckComboToken(ctx context.Context, id int64, token string) (*store.Account, error) {
-	account, err := s.server.Store().Account().GetAccount(ctx, id)
+	record, err := s.server.Store().Account().GetAccount(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	if account.ComboToken == "" || account.ComboToken != token {
+	if record.ComboToken == "" || record.ComboToken != token {
 		return nil, http.ErrInvalidComboToken
 	}
-	return account, nil
+	return record, nil
 }

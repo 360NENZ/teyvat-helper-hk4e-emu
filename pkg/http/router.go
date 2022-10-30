@@ -6,6 +6,8 @@ func (s *Server) initRouter() {
 
 	s.router.GET("/ping", s.handlePing)
 
+	s.router.POST("/api/account/token/check", s.handleAPITokenCheck)
+
 	// Mainland: gameapi-account.*
 	// Overseas: api-account-os.*
 	s.router.POST("/account/risky/api/check", s.handleSDKRiskyCheck)
