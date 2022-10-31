@@ -2,6 +2,10 @@ package game
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
+	"errors"
 	"fmt"
 	"math/rand"
 	"os"
@@ -10,6 +14,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/config"
+	"github.com/teyvat-helper/hk4e-emu/pkg/http"
 	"github.com/teyvat-helper/hk4e-emu/pkg/net"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
@@ -86,6 +91,57 @@ func (s *Server) LoadSecret() error {
 		return err
 	}
 	s.secret.Shared.SetSeed(seed)
+	rest, _ := os.ReadFile("data/secret.pem")
+	var block *pem.Block
+	for {
+		block, rest = pem.Decode(rest)
+		switch block.Type {
+		case "DISPATCH SERVER RSA PRIVATE KEY":
+			s.secret.Server.PrivateKey, err = x509.ParsePKCS1PrivateKey(block.Bytes)
+			if err != nil {
+				return err
+			}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 2":
+			k, err := x509.ParsePKIXPublicKey(block.Bytes)
+			if err != nil {
+				return err
+			} else if k, ok := k.(*rsa.PublicKey); !ok {
+				return errors.New("invalid public key")
+			} else {
+				s.secret.Client[2] = &http.PublicKey{PublicKey: k}
+			}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 3":
+			k, err := x509.ParsePKIXPublicKey(block.Bytes)
+			if err != nil {
+				return err
+			} else if k, ok := k.(*rsa.PublicKey); !ok {
+				return errors.New("invalid public key")
+			} else {
+				s.secret.Client[3] = &http.PublicKey{PublicKey: k}
+			}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 4":
+			k, err := x509.ParsePKIXPublicKey(block.Bytes)
+			if err != nil {
+				return err
+			} else if k, ok := k.(*rsa.PublicKey); !ok {
+				return errors.New("invalid public key")
+			} else {
+				s.secret.Client[4] = &http.PublicKey{PublicKey: k}
+			}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 5":
+			k, err := x509.ParsePKIXPublicKey(block.Bytes)
+			if err != nil {
+				return err
+			} else if k, ok := k.(*rsa.PublicKey); !ok {
+				return errors.New("invalid public key")
+			} else {
+				s.secret.Client[5] = &http.PublicKey{PublicKey: k}
+			}
+		}
+		if len(rest) == 0 {
+			break
+		}
+	}
 	return nil
 }
 
