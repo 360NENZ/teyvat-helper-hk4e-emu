@@ -80,7 +80,7 @@ func (s *Server) handleQueryCurrentRegion() gin.HandlerFunc {
 		switch id := c.Query("key_id"); id {
 		case "":
 			c.String(http.StatusOK, base64.StdEncoding.EncodeToString(b))
-		case "2", "3":
+		case "2", "3", "4", "5":
 			pub, ok := s.secret.Client[id]
 			if !ok {
 				c.JSON(http.StatusOK, gin.H{"error": "missing public key " + id})

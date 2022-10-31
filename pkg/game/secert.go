@@ -38,6 +38,12 @@ func NewSecret() *Secret {
 		case "DISPATCH CLIENT RSA PUBLIC KEY 3":
 			k, _ := x509.ParsePKCS1PublicKey(block.Bytes)
 			s.Client[3] = &http.PublicKey{PublicKey: k}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 4":
+			k, _ := x509.ParsePKCS1PublicKey(block.Bytes)
+			s.Client[4] = &http.PublicKey{PublicKey: k}
+		case "DISPATCH CLIENT RSA PUBLIC KEY 5":
+			k, _ := x509.ParsePKCS1PublicKey(block.Bytes)
+			s.Client[5] = &http.PublicKey{PublicKey: k}
 		}
 		if len(rest) == 0 {
 			break
