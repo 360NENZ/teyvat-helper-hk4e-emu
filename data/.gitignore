@@ -3,3 +3,5 @@
 !secret.bin
 !secret.pem
 !secret.seed
+!ssl.crt
+!ssl.key

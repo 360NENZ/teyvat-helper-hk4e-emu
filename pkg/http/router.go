@@ -82,4 +82,7 @@ func (s *Server) initRouter() {
 
 	// Overseas: abtest-api-data-sg.*
 	s.router.POST("/data_abtest_api/config/experiment/list", s.handleABTest)
+	
+	// GC and other launchers
+	s.router.GET("/status/server", s.handleServerStatus)
 }

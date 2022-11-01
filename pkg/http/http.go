@@ -41,7 +41,7 @@ func NewServer(cfg *config.Config) *Server {
 func (s *Server) Start() error {
 	s.initRouter()
 	s.server = &http.Server{Addr: s.config.HTTPServer.Addr, Handler: s.router}
-	if err := s.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := s.server.ListenAndServeTLS("data/ssl.crt","data/ssl.key"); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 	return nil
