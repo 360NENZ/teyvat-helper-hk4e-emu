@@ -9,6 +9,7 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
@@ -22,7 +23,15 @@ type Config struct {
 }
 
 type HTTPServerConfig struct {
-	Addr string `mapstructure:"addr"`
+	Enable bool      `mapstructure:"enable"`
+	Addr   string    `mapstructure:"addr"`
+	TLS    TLSConfig `mapstructure:"tls"`
+}
+
+type TLSConfig struct {
+	Enable   bool   `mapstructure:"enable"`
+	CertFile string `mapstructure:"certFile"`
+	KeyFile  string `mapstructure:"keyFile"`
 }
 
 type GateServerConfig struct {
@@ -33,7 +42,8 @@ type GateServerConfig struct {
 }
 
 type GameServerConfig struct {
-	Addr string `mapstructure:"addr"`
+	Enable bool   `mapstructure:"enable"`
+	Addr   string `mapstructure:"addr"`
 }
 
 type DatabaseConfig struct {
@@ -44,7 +54,9 @@ type DatabaseConfig struct {
 var DefaultConfig = Config{
 	BaseDomain: "example.com",
 	HTTPServer: HTTPServerConfig{
-		Addr: "0.0.0.0:8080",
+		Enable: true,
+		Addr:   "0.0.0.0:8080",
+		TLS:    TLSConfig{Enable: false},
 	},
 	GateServer: []GateServerConfig{{
 		Name:  "os_beta01",
@@ -52,7 +64,8 @@ var DefaultConfig = Config{
 		Addr:  "127.0.0.1:22102",
 	}},
 	GameServer: GameServerConfig{
-		Addr: "0.0.0.0:22102",
+		Enable: true,
+		Addr:   "0.0.0.0:22102",
 	},
 	Database: DatabaseConfig{
 		Driver: "sqlite",
@@ -72,4 +85,33 @@ func newRollingFile() io.Writer {
 	return &lumberjack.Logger{
 		Filename: path.Join("log", fmt.Sprintf("hk4e-emu-%s.log", time.Now().Format("2006-01-02-15-04-05"))),
 	}
+}
+
+func LoadConfig() (cfg Config) {
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("/etc/hk4e-emu")
+	viper.AddConfigPath("$HOME/.hk4e-emu")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Warn().Msg("Config file not found, using the default config")
+			cfg = DefaultConfig
+			return
+		} else {
+			log.Panic().Err(err).Msg("Failed to read config file")
+		}
+	}
+	if err := viper.Unmarshal(&cfg); err != nil {
+		log.Panic().Err(err).Msg("Failed to decode config file")
+	}
+	if tls := cfg.HTTPServer.TLS; tls.Enable {
+		if tls.CertFile == "" {
+			tls.CertFile = "data/tls_cert.pem"
+		}
+		if tls.KeyFile == "" {
+			tls.KeyFile = "data/tls_key.pem"
+		}
+	}
+	return
 }

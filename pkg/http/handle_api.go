@@ -6,8 +6,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"github.com/teyvat-helper/hk4e-emu/pkg"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
+
+func (s *Server) handleAPIStatus(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"retcode": 0,
+		"status": gin.H{
+			"buildVersion": pkg.BuildVersion,
+			"version":      pkg.ProtoVersion,
+			"maxPlayer":    -1,
+			"playerCount":  0, // TODO: get active player sessions from store
+		},
+	})
+}
 
 type apiTokenCheckRequestData struct {
 	AppID      int32  `json:"app_id"`

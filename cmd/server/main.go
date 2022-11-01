@@ -8,35 +8,14 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"github.com/teyvat-helper/hk4e-emu/pkg/config"
 	"github.com/teyvat-helper/hk4e-emu/pkg/game"
 	"github.com/teyvat-helper/hk4e-emu/pkg/http"
 )
 
-var cfg config.Config
-
-func init() {
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("/etc/hk4e-emu")
-	viper.AddConfigPath("$HOME/.hk4e-emu")
-	viper.AddConfigPath(".")
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Warn().Msg("Config file not found, using the default config")
-			cfg = config.DefaultConfig
-			return
-		} else {
-			log.Panic().Err(err).Msg("Failed to read config file")
-		}
-	}
-	if err := viper.Unmarshal(&cfg); err != nil {
-		log.Panic().Err(err).Msg("Failed to decode config file")
-	}
-}
-
 func main() {
+	cfg := config.LoadConfig()
+
 	gamesrv := game.NewServer(&cfg)
 	httpsrv := http.NewServer(&cfg)
 

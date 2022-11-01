@@ -1,7 +1,9 @@
 baseDomain: example.com
 autoSignUp: true
 httpServer:
+  enable: true
   addr: 0.0.0.0:8080
+  tls.enable: false
 gateServer:
   - name: os_beta01
     title: 127.0.0.1:22101
@@ -10,6 +12,7 @@ gateServer:
     title: 127.0.0.1:22102
     addr: 127.0.0.1:22102
 gameServer:
+  enable: true
   addr: 0.0.0.0:22102
 database:
   driver: sqlite

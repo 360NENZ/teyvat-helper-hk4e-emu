@@ -15,11 +15,6 @@ func (s *Server) handlePing(c *gin.Context) {
 	c.String(http.StatusOK, "ok")
 }
 
-
-func (s *Server) handleServerStatus(c *gin.Context) {
-	c.String(http.StatusOK, "{\"retcode\":0,\"status\":{\"playerCount\":0,\"maxPlayer\":-1,\"version\":\"3.2.0\"}}")
-}
-
 func (s *Server) handleLogUpload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0})
 }

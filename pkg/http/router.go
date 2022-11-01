@@ -6,7 +6,12 @@ func (s *Server) initRouter() {
 
 	s.router.GET("/ping", s.handlePing)
 
-	s.router.POST("/api/account/token/check", s.handleAPITokenCheck)
+	// api handlers
+	api := s.router.Group("/api")
+	{
+		api.POST("/account/token/check", s.handleAPITokenCheck)
+		api.GET("/status", s.handleAPIStatus)
+	}
 
 	// Mainland: gameapi-account.*
 	// Overseas: api-account-os.*
@@ -82,7 +87,4 @@ func (s *Server) initRouter() {
 
 	// Overseas: abtest-api-data-sg.*
 	s.router.POST("/data_abtest_api/config/experiment/list", s.handleABTest)
-	
-	// GC and other launchers
-	s.router.GET("/status/server", s.handleServerStatus)
 }
