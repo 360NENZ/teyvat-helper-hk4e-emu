@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/config"
 	"github.com/teyvat-helper/hk4e-emu/pkg/ec2b"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
@@ -41,9 +42,10 @@ func NewServer(cfg *config.Config) *Server {
 func (s *Server) Start() (err error) {
 	s.initRouter()
 	s.server = &http.Server{Addr: s.config.HTTPServer.Addr, Handler: s.router}
-	if tls := s.config.HTTPServer.TLS; !tls.Enable {
+	if tls := &s.config.HTTPServer.TLS; !tls.Enable {
 		err = s.server.ListenAndServe()
 	} else {
+		log.Debug().Str("cert", tls.CertFile).Str("key", tls.KeyFile).Msg("TLS enabled")
 		err = s.server.ListenAndServeTLS(tls.CertFile, tls.KeyFile)
 	}
 	if err != nil && err != http.ErrServerClosed {

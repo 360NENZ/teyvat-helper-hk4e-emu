@@ -105,7 +105,7 @@ func LoadConfig() (cfg Config) {
 	if err := viper.Unmarshal(&cfg); err != nil {
 		log.Panic().Err(err).Msg("Failed to decode config file")
 	}
-	if tls := cfg.HTTPServer.TLS; tls.Enable {
+	if tls := &cfg.HTTPServer.TLS; tls.Enable {
 		if tls.CertFile == "" {
 			tls.CertFile = "data/tls_cert.pem"
 		}
