@@ -16,6 +16,7 @@ import (
 type Config struct {
 	BaseDomain string             `mapstructure:"baseDomain"`
 	AutoSignUp bool               `mapstructure:"autoSignUp"`
+	PassSignIn bool               `mapstructure:"passSignIn"`
 	HTTPServer HTTPServerConfig   `mapstructure:"httpServer"`
 	GateServer []GateServerConfig `mapstructure:"gateServer"`
 	GameServer GameServerConfig   `mapstructure:"gameServer"`
@@ -30,6 +31,7 @@ type HTTPServerConfig struct {
 
 type TLSConfig struct {
 	Enable   bool   `mapstructure:"enable"`
+	Addr     string `mapstructure:"addr"`
 	CertFile string `mapstructure:"certFile"`
 	KeyFile  string `mapstructure:"keyFile"`
 }
@@ -53,13 +55,19 @@ type DatabaseConfig struct {
 
 var DefaultConfig = Config{
 	BaseDomain: "example.com",
+	AutoSignUp: true,
+	PassSignIn: false,
 	HTTPServer: HTTPServerConfig{
 		Enable: true,
 		Addr:   "0.0.0.0:8080",
 		TLS:    TLSConfig{Enable: false},
 	},
 	GateServer: []GateServerConfig{{
-		Name:  "os_beta01",
+		Name:        "os_beta01",
+		Title:       "127.0.0.1:22101",
+		DispatchUrl: "http://127.0.0.1:8080/query_cur_region",
+	}, {
+		Name:  "os_beta02",
 		Title: "127.0.0.1:22102",
 		Addr:  "127.0.0.1:22102",
 	}},

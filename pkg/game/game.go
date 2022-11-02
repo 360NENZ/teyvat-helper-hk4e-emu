@@ -54,7 +54,7 @@ func (s *Server) deletePlayerSession(ctx context.Context, session *PlayerSession
 	return session, nil
 }
 
-func (s *Server) run() {
+func (s *Server) run() error {
 	var err error
 	for packet := range s.conn.Packet() {
 		session, ok := s.sessions[packet.Session().ID()]
@@ -67,6 +67,7 @@ func (s *Server) run() {
 		}
 		go session.handlePacket(packet, s.onPacket)
 	}
+	return nil
 }
 
 func (s *Server) Store() *store.Store { return s.store }
@@ -77,8 +78,8 @@ func (s *Server) Start() error {
 		return err
 	}
 	s.conn = conn
-	go s.run()
-	select {}
+	log.Info().Str("listen_addr", s.config.GameServer.Addr).Msg("GAME server is starting")
+	return s.run()
 }
 
 func (s *Server) LoadSecret() error {

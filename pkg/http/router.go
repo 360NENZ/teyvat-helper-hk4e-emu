@@ -9,8 +9,11 @@ func (s *Server) initRouter() {
 	// api handlers
 	api := s.router.Group("/api")
 	{
-		api.POST("/account/token/check", s.handleAPITokenCheck)
+		api.GET("/publicKey", s.handleAPIPublicKey)
 		api.GET("/status", s.handleAPIStatus)
+		api.GET("/status/legacy", s.handleAPIStatusLegacy)
+
+		api.POST("/account/token/check", s.handleAPITokenCheck)
 	}
 
 	// Mainland: gameapi-account.*

@@ -21,7 +21,8 @@ func (s *AccountStore) UpdateAccount(ctx context.Context, record *Account) error
 	return err
 }
 func (s *AccountStore) UpdateAccountPassword(ctx context.Context, id int64, password string) error {
-	panic("todo")
+	_, err := s.db.NewUpdate().Model(&Account{ID: id, Password: password}).WherePK().OmitZero().Exec(ctx)
+	return err
 }
 func (s *AccountStore) UpdateAccountLoginToken(ctx context.Context, id int64, token string) error {
 	_, err := s.db.NewUpdate().Model(&Account{ID: id, LoginToken: token}).WherePK().OmitZero().Exec(ctx)

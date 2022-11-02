@@ -34,13 +34,11 @@ func main() {
 			log.Fatal().Err(err).Msg("Failed to start GAME server")
 		}
 	}()
-	log.Info().Str("listen_addr", cfg.GameServer.Addr).Msg("GAME server is running")
 	go func() {
 		if err := httpsrv.Start(); err != nil {
 			log.Fatal().Err(err).Msg("Failed to start HTTP server")
 		}
 	}()
-	log.Info().Str("listen_addr", cfg.HTTPServer.Addr).Msg("HTTP server is running")
 
 	<-done
 

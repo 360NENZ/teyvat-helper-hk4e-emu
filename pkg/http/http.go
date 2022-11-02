@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bytes"
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
@@ -41,11 +42,22 @@ func NewServer(cfg *config.Config) *Server {
 
 func (s *Server) Start() (err error) {
 	s.initRouter()
-	s.server = &http.Server{Addr: s.config.HTTPServer.Addr, Handler: s.router}
+	addr, tlsAddr := s.config.HTTPServer.Addr, s.config.HTTPServer.TLS.Addr
 	if tls := &s.config.HTTPServer.TLS; !tls.Enable {
+		s.server = &http.Server{Addr: addr, Handler: s.router}
+		log.Info().Str("listen_addr", addr).Msg("HTTP server is starting")
 		err = s.server.ListenAndServe()
 	} else {
 		log.Debug().Str("cert", tls.CertFile).Str("key", tls.KeyFile).Msg("TLS enabled")
+		if tlsAddr == "" {
+			tlsAddr = addr
+		} else if tlsAddr != addr {
+			log.Warn().Str("addr", addr).Str("tlsAddr", tlsAddr).Msg("TLS address is different from HTTP address, both will be used")
+			log.Info().Str("listen_addr", addr).Msg("HTTP server is starting")
+			go s.router.Run(addr)
+		}
+		s.server = &http.Server{Addr: tlsAddr, Handler: s.router}
+		log.Info().Str("listen_addr", tlsAddr).Msg("HTTPS server is starting")
 		err = s.server.ListenAndServeTLS(tls.CertFile, tls.KeyFile)
 	}
 	if err != nil && err != http.ErrServerClosed {
@@ -82,6 +94,14 @@ func (s *Server) LoadSecret() error {
 			if err != nil {
 				return err
 			}
+			var buf bytes.Buffer
+			if err := pem.Encode(&buf, &pem.Block{
+				Type:  "RSA PUBLIC KEY",
+				Bytes: x509.MarshalPKCS1PublicKey(&s.secret.Server.PublicKey),
+			}); err != nil {
+				return err
+			}
+			s.secret.Server.PublicKeyPEM = buf.String()
 		case "DISPATCH CLIENT RSA PUBLIC KEY 2":
 			k, err := x509.ParsePKIXPublicKey(block.Bytes)
 			if err != nil {

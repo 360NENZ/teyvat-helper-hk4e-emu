@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -130,9 +131,9 @@ func (s *Server) handleSDKShieldLogin(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-202, nil))
 		return
 	}
-	account, err := s.serviceShieldLogin(c, req.Account, "")
+	account, err := s.serviceShieldLogin(c, req.Account, req.Password, req.IsCrypto)
 	if err == sql.ErrNoRows && s.config.AutoSignUp {
-		account, err = s.serviceCreateAccount(c, req.Account, "")
+		account, err = s.serviceCreateAccount(c, req.Account, req.Password, req.IsCrypto)
 	}
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to shield login")
@@ -153,7 +154,7 @@ func (s *Server) handleSDKShieldLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, newSDKResponse(0, &resp))
 }
 
-func (s *Server) serviceShieldLogin(ctx context.Context, username, password string) (record *store.Account, err error) {
+func (s *Server) serviceShieldLogin(ctx context.Context, username, password string, isCrypto bool) (record *store.Account, err error) {
 	if !strings.Contains(username, "@") {
 		record, err = s.store.Account().GetAccountByUsername(ctx, username)
 	} else {
@@ -162,17 +163,25 @@ func (s *Server) serviceShieldLogin(ctx context.Context, username, password stri
 	if err != nil {
 		return nil, err
 	}
-	if record.Password != "" && record.Password != password {
-		return nil, ErrInvalidPassword
+	if s.config.PassSignIn {
+		if isCrypto {
+			p, err := s.secret.Server.DecryptBase64(password)
+			if err != nil {
+				return nil, err
+			}
+			password = string(p)
+		}
+		if bcrypt.CompareHashAndPassword([]byte(record.Password), []byte(password)) != nil {
+			return nil, ErrInvalidPassword
+		}
 	}
-	record.Password = ""
 	loginToken := make([]byte, 24)
 	rand.Read(loginToken)
 	record.LoginToken = base64.RawStdEncoding.EncodeToString(loginToken)
 	return record, s.store.Account().UpdateAccountLoginToken(ctx, record.ID, record.LoginToken)
 }
 
-func (s *Server) serviceCreateAccount(ctx context.Context, username, password string) (record *store.Account, err error) {
+func (s *Server) serviceCreateAccount(ctx context.Context, username, password string, isCrypto bool) (record *store.Account, err error) {
 	if !strings.Contains(username, "@") {
 		record = &store.Account{Username: username, Email: username + "@" + s.config.BaseDomain}
 		if err = s.store.Account().CreateAccount(ctx, record); err != nil {
@@ -180,6 +189,22 @@ func (s *Server) serviceCreateAccount(ctx context.Context, username, password st
 		}
 	} else {
 		return nil, fmt.Errorf("email is not supported")
+	}
+	if s.config.PassSignIn {
+		if isCrypto {
+			p, err := s.secret.Server.DecryptBase64(password)
+			if err != nil {
+				return nil, err
+			}
+			password = string(p)
+		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		if err := s.store.Account().UpdateAccountPassword(ctx, record.ID, string(hash)); err != nil {
+			return nil, err
+		}
 	}
 	loginToken := make([]byte, 24)
 	rand.Read(loginToken)

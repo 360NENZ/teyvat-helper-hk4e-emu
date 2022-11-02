@@ -10,7 +10,21 @@ import (
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
+func (s *Server) handleAPIPublicKey(c *gin.Context) {
+	c.String(http.StatusOK, s.secret.Server.PublicKeyPEM)
+}
+
 func (s *Server) handleAPIStatus(c *gin.Context) {
+	// TODO: not stable yet
+	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+		"buildVersion": pkg.BuildVersion,
+		"protoVersion": pkg.ProtoVersion,
+		"maxPlayer":    -1,
+		"playerCount":  0, // TODO: get active player sessions from store
+	}))
+}
+
+func (s *Server) handleAPIStatusLegacy(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"retcode": 0,
 		"status": gin.H{

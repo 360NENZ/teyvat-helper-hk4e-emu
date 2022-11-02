@@ -2,7 +2,12 @@ package store
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
+
+	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (s *Store) checkInit(ctx context.Context) bool {
@@ -38,8 +43,19 @@ func (s *Store) install(ctx context.Context) error {
 	s.db.NewCreateTable().Model((*PlayerData)(nil)).IfNotExists().Exec(ctx)
 	s.db.NewCreateTable().Model((*BlockData)(nil)).IfNotExists().Exec(ctx)
 	s.db.NewCreateTable().Model((*HomeData)(nil)).IfNotExists().Exec(ctx)
+	randBytes := make([]byte, 6)
+	if _, err := rand.Read(randBytes); err != nil {
+		return err
+	}
+	base64Str := base64.RawStdEncoding.EncodeToString(randBytes)
+	hashed, err := bcrypt.GenerateFromPassword([]byte(base64Str), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	log.Info().Str("username", "admin").Str("password", base64Str).Msg("admin account created")
 	return s.Account().CreateAccount(ctx, &Account{
 		Email:    "admin@localhost",
 		Username: "admin",
+		Password: string(hashed),
 	})
 }

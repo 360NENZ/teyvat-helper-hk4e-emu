@@ -25,6 +25,7 @@ func NewSecret() *Secret {
 
 type PrivateKey struct {
 	*rsa.PrivateKey
+	PublicKeyPEM string
 }
 
 func (k *PrivateKey) Sign(msg []byte) ([]byte, error) {
