@@ -5,51 +5,33 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"github.com/teyvat-helper/hk4e-emu/pkg/sdk"
 )
 
 func (s *Server) handleSDKGetAgreementInfos(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
-		"marketing_agreements": []any{},
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
+		"marketing_agreements": []gin.H{},
 	}))
 }
 
-type sdkCompareProtocolVersionRequestData struct {
-	ID        string `json:"id"`
-	AppID     string `json:"app_id"`
-	ChannelID string `json:"channel_id"`
-	Language  string `json:"language"`
-	Major     string `json:"major"`
-	Minimum   string `json:"minimum"`
-}
-
-type sdkProtocolVersion struct {
-	ID            int64  `json:"id"`
-	AppID         int64  `json:"app_id"`
-	Language      string `json:"language"`
-	UserProto     string `json:"user_proto"`
-	PrivProto     string `json:"priv_proto"`
-	Major         int32  `json:"major"`
-	Minimum       int32  `json:"minimum"`
-	CreateTime    string `json:"create_time"`
-	TeenagerProto string `json:"teenager_proto"`
-	ThirdProto    string `json:"third_proto"`
-}
-
-type sdkCompareProtocolVersionResponseData struct {
-	Modified bool                `json:"modified"`
-	Protocol *sdkProtocolVersion `json:"protocol"`
+func (s *Server) handleSDKGetShopPriceTier(c *gin.Context) {
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
+		"suggest_currency":   "USD",
+		"price_tier_version": "0",
+		"tiers":              []gin.H{},
+	}))
 }
 
 func (s *Server) handleSDKCompareProtocolVersion(c *gin.Context) {
-	var req sdkCompareProtocolVersionRequestData
+	var req sdk.CompareProtocolVersionRequestData
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Msg("Failed to bind request")
-		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-106, nil))
+		c.AbortWithStatusJSON(http.StatusOK, sdk.NewResponse(-106, nil))
 		return
 	}
-	var resp sdkCompareProtocolVersionResponseData
+	var resp sdk.CompareProtocolVersionResponseData
 	resp.Modified = true // TODO: check version
-	resp.Protocol = &sdkProtocolVersion{
+	resp.Protocol = &sdk.ProtocolVersion{
 		AppID:      4,
 		Language:   req.Language,
 		CreateTime: "0",
@@ -67,11 +49,11 @@ func (s *Server) handleSDKCompareProtocolVersion(c *gin.Context) {
 	case "zh-tw":
 		resp.Protocol.Major = 10
 	}
-	c.JSON(http.StatusOK, newSDKResponse(0, &resp))
+	c.JSON(http.StatusOK, sdk.NewResponse(0, &resp))
 }
 
 func (s *Server) handleSDKGetConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
 		"protocol":                  true,
 		"qr_enabled":                false,
 		"log_level":                 "INFO",
@@ -83,7 +65,7 @@ func (s *Server) handleSDKGetConfig(c *gin.Context) {
 }
 
 func (s *Server) handleSDKLoadConfig(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
 		"id":                     6,
 		"game_key":               "hk4e_global",
 		"client":                 "PC",
@@ -107,7 +89,7 @@ func (s *Server) handleSDKLoadConfig(c *gin.Context) {
 }
 
 func (s *Server) handleSDKConfigCombo(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
 		"vals": gin.H{
 			"pay_payco_centered_host":    "bill.payco.com",
 			"email_bind_remind":          "true",
@@ -120,8 +102,8 @@ func (s *Server) handleSDKConfigCombo(c *gin.Context) {
 	}))
 }
 
-func (s *Server) handleABTest(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, []gin.H{{
+func (s *Server) handleSDKABTest(c *gin.Context) {
+	c.JSON(http.StatusOK, sdk.NewResponse(0, []gin.H{{
 		"code":      1000,
 		"type":      2,
 		"config_id": "14",

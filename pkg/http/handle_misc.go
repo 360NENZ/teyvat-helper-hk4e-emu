@@ -8,7 +8,11 @@ import (
 )
 
 func (s *Server) handleDefault(c *gin.Context) {
-	c.JSON(http.StatusOK, newSDKResponse(0, nil))
+	c.JSON(http.StatusOK, "!>.<")
+}
+
+func (s *Server) handleOptionsPing(c *gin.Context) {
+	c.AbortWithStatus(http.StatusOK)
 }
 
 func (s *Server) handlePing(c *gin.Context) {

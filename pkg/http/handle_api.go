@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"github.com/teyvat-helper/hk4e-emu/pkg"
+	"github.com/teyvat-helper/hk4e-emu/pkg/sdk"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
@@ -16,7 +17,7 @@ func (s *Server) handleAPIPublicKey(c *gin.Context) {
 
 func (s *Server) handleAPIStatus(c *gin.Context) {
 	// TODO: not stable yet
-	c.JSON(http.StatusOK, newSDKResponse(0, gin.H{
+	c.JSON(http.StatusOK, sdk.NewResponse(0, gin.H{
 		"buildVersion": pkg.BuildVersion,
 		"protoVersion": pkg.ProtoVersion,
 		"maxPlayer":    -1,
@@ -36,39 +37,23 @@ func (s *Server) handleAPIStatusLegacy(c *gin.Context) {
 	})
 }
 
-type apiTokenCheckRequestData struct {
-	AppID      int32  `json:"app_id"`
-	ChannelID  int32  `json:"channel_id"`
-	OpenID     ID     `json:"open_id"`
-	ComboToken string `json:"combo_token"`
-	Sign       string `json:"sign"`
-	Region     string `json:"region"`
-}
-
-type apiTokenCheckResponseData struct {
-	AccountType int32 `json:"account_type"`
-	IPInfo      struct {
-		CountryCode string `json:"country_code"`
-	} `json:"ip_info"`
-}
-
 func (s *Server) handleAPITokenCheck(c *gin.Context) {
-	var req apiTokenCheckRequestData
+	var req sdk.TokenCheckRequestData
 	if err := c.BindJSON(&req); err != nil {
 		log.Error().Err(err).Msg("Failed to bind JSON")
-		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-210, nil))
+		c.AbortWithStatusJSON(http.StatusOK, sdk.NewResponse(-210, nil))
 		return
 	}
 	_, err := s.serviceCheckComboToken(c, int64(req.OpenID), req.ComboToken)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to check combo token")
-		c.AbortWithStatusJSON(http.StatusOK, newSDKResponse(-210, nil))
+		c.AbortWithStatusJSON(http.StatusOK, sdk.NewResponse(-210, nil))
 		return
 	}
-	var resp apiTokenCheckResponseData
+	var resp sdk.TokenCheckResponseData
 	resp.AccountType = 1
 	resp.IPInfo.CountryCode = "us"
-	c.JSON(http.StatusOK, newSDKResponse(0, &resp))
+	c.JSON(http.StatusOK, sdk.NewResponse(0, &resp))
 }
 
 func (s *Server) serviceCheckComboToken(ctx context.Context, id int64, token string) (*store.Account, error) {
@@ -77,7 +62,7 @@ func (s *Server) serviceCheckComboToken(ctx context.Context, id int64, token str
 		return nil, err
 	}
 	if record.ComboToken == "" || record.ComboToken != token {
-		return nil, ErrInvalidComboToken
+		return nil, sdk.ErrInvalidComboToken
 	}
 	return record, nil
 }

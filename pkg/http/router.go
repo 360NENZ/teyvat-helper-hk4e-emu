@@ -4,7 +4,9 @@ func (s *Server) initRouter() {
 	s.router.GET("/", s.handleDefault)
 	s.router.POST("/", s.handleDefault)
 
+	s.router.OPTIONS("/ping", s.handleOptionsPing)
 	s.router.GET("/ping", s.handlePing)
+	s.router.POST("/ping", s.handlePing)
 
 	// api handlers
 	api := s.router.Group("/api")
@@ -74,6 +76,8 @@ func (s *Server) initRouter() {
 	s.router.GET("/common/hk4e_global/announcement/api/getAnnList")
 	s.router.GET("/hk4e_cn/mdk/agreement/api/getAgreementInfos", s.handleSDKGetAgreementInfos)
 	s.router.GET("/hk4e_global/mdk/agreement/api/getAgreementInfos", s.handleSDKGetAgreementInfos)
+	s.router.POST("/hk4e_cn/mdk/shopwindow/shopwindow/listPriceTier", s.handleSDKGetShopPriceTier)
+	s.router.POST("/hk4e_global/mdk/shopwindow/shopwindow/listPriceTier", s.handleSDKGetShopPriceTier)
 	s.router.POST("/hk4e_cn/combo/granter/api/compareProtocolVersion", s.handleSDKCompareProtocolVersion)
 	s.router.POST("/hk4e_global/combo/granter/api/compareProtocolVersion", s.handleSDKCompareProtocolVersion)
 
@@ -89,5 +93,5 @@ func (s *Server) initRouter() {
 	s.router.GET("/combo/box/api/config/sdk/combo", s.handleSDKConfigCombo)
 
 	// Overseas: abtest-api-data-sg.*
-	s.router.POST("/data_abtest_api/config/experiment/list", s.handleABTest)
+	s.router.POST("/data_abtest_api/config/experiment/list", s.handleSDKABTest)
 }

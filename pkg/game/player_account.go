@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/teyvat-helper/hk4e-emu/pkg/http"
+	"github.com/teyvat-helper/hk4e-emu/pkg/sdk"
 	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
@@ -32,7 +32,7 @@ func (s *PlayerSession) CheckComboToken(ctx context.Context, id int64, token str
 		return nil, err
 	}
 	if record.ComboToken == "" || record.ComboToken != token {
-		return nil, http.ErrInvalidComboToken
+		return nil, sdk.ErrInvalidComboToken
 	}
 	return record, nil
 }
