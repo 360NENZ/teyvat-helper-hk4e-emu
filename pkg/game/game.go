@@ -23,6 +23,7 @@ type Server struct {
 	config   *config.Config
 	random   *rand.Rand
 	secret   *Secret
+	filter   *PacketFilter
 	conn     *net.KCPConn
 	store    *store.Store
 	sessions map[uint32]*PlayerSession
@@ -33,6 +34,7 @@ func NewServer(cfg *config.Config) *Server {
 	s.config = cfg
 	s.random = rand.New(rand.NewSource(time.Now().UnixNano()))
 	s.secret = NewSecret()
+	s.filter = NewPacketFilter(s.config)
 	s.store = store.NewStore(s.config)
 	s.sessions = make(map[uint32]*PlayerSession)
 	return s

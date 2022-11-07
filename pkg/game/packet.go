@@ -26,6 +26,14 @@ func (s *Server) onPacket(packet *Packet) {
 
 	var err error
 	ctx := s.Context(packet)
+	if packet.message != nil {
+		name := packet.message.ProtoMessageType()
+		if block := s.filter.Map(ctx, name); block {
+			log.Warn().Uint16("cmdid", uint16(packet.command)).Str("name", string(name)).Msg("Blocked recv packet")
+			return
+		}
+	}
+
 	switch message := packet.message.(type) {
 
 	// handle cmd avatar

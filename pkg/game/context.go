@@ -27,10 +27,15 @@ func (s *Server) Context(packet *Packet) *Context {
 }
 
 func (s *Server) Send(ctx *Context, message pb.ProtoMessage) error {
+	name := message.ProtoMessageType()
 	head, _ := json.Marshal(ctx.head)
 	body, _ := json.Marshal(message)
 	log.Debug().RawJSON("head", head).RawJSON("body", body).
-		Msgf("SEND ··> %5d - %5d:%s", ctx.head.GetClientSequenceId(), message.ProtoCommand(), message.ProtoMessageType())
+		Msgf("SEND ··> %5d - %5d:%s", ctx.head.GetClientSequenceId(), message.ProtoCommand(), name)
+	if block := s.filter.Map(ctx, name); block {
+		log.Warn().Uint16("cmdid", uint16(message.ProtoCommand())).Str("name", string(name)).Msg("Blocked send packet")
+		return nil
+	}
 	return ctx.Session().Send(ctx.head, message)
 }
 

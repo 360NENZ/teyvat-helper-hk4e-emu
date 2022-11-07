@@ -1,3 +1,12 @@
+defaultFilter: &defaultFilter
+  enable: true
+  rules:
+    # default allow all packets
+    - allow:*
+    # except:
+    - block:WindSeedClientNotify
+    - block:PlayerLuaShellNotify
+
 baseDomain: example.com
 autoSignUp: true
 passSignIn: false
@@ -20,6 +29,7 @@ gateServer:
 gameServer:
   enable: true
   addr: 0.0.0.0:22102
+  filter: *defaultFilter
 database:
   driver: sqlite
   dsn: file:data/hk4e-emu.db?cache=shared&mode=rwc

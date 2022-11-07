@@ -43,9 +43,15 @@ type GateServerConfig struct {
 	DispatchUrl string `mapstructure:"dispatchUrl"`
 }
 
+type FilterConfig struct {
+	Enable bool     `mapstructure:"enable"`
+	Rules  []string `mapstructure:"rules"`
+}
+
 type GameServerConfig struct {
-	Enable bool   `mapstructure:"enable"`
-	Addr   string `mapstructure:"addr"`
+	Enable bool         `mapstructure:"enable"`
+	Addr   string       `mapstructure:"addr"`
+	Filter FilterConfig `mapstructure:"filter"`
 }
 
 type DatabaseConfig struct {
@@ -74,6 +80,14 @@ var DefaultConfig = Config{
 	GameServer: GameServerConfig{
 		Enable: true,
 		Addr:   "0.0.0.0:22102",
+		Filter: FilterConfig{
+			Enable: true,
+			Rules: []string{
+				"allow:*",
+				"block:WindSeedClientNotify",
+				"block:PlayerLuaShellNotify",
+			},
+		},
 	},
 	Database: DatabaseConfig{
 		Driver: "sqlite",
