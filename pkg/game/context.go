@@ -3,6 +3,7 @@ package game
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sync"
 
 	"github.com/aj3423/aproto"
@@ -18,8 +19,9 @@ func (s *Server) Context(packet *Packet) *Context {
 		log.Debug().RawJSON("head", head).RawJSON("body", body).
 			Msgf("RECV <·· %5d - %5d:%s", packet.head.GetClientSequenceId(), packet.message.ProtoCommand(), packet.message.ProtoMessageType())
 	} else {
-		log.Debug().RawJSON("head", head).Str("body", aproto.Dump(packet.rawData)).
+		log.Debug().RawJSON("head", head).Hex("body", packet.rawData).
 			Msgf("RECV <·· %5d - %5d:*****", packet.head.GetClientSequenceId(), packet.command)
+		fmt.Println(aproto.Dump(packet.rawData))
 	}
 	return &Context{Context: context.Background(), session: packet.session, head: packet.head}
 }

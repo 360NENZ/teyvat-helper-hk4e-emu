@@ -6,8 +6,8 @@ require (
 	github.com/aj3423/aproto v0.0.0-20221015122707-91b1011be03e
 	github.com/gin-gonic/gin v1.8.1
 	github.com/rs/zerolog v1.28.0
-	github.com/spf13/viper v1.13.0
-	github.com/teyvat-helper/hk4e-proto v0.0.0-20221027153353-c3e4566aa223
+	github.com/spf13/viper v1.14.0
+	github.com/teyvat-helper/hk4e-proto v1.0.0
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.8
 	github.com/uptrace/bun/driver/sqliteshim v1.1.8
@@ -60,12 +60,12 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect
-	modernc.org/ccgo/v3 v3.16.13-0.20221017192402-261537637ce8 // indirect
+	modernc.org/ccgo/v3 v3.16.13 // indirect
 	modernc.org/libc v1.21.4 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.4.0 // indirect
 	modernc.org/opt v0.1.3 // indirect
-	modernc.org/sqlite v1.19.3 // indirect
+	modernc.org/sqlite v1.19.4 // indirect
 	modernc.org/strutil v1.1.3 // indirect
 	modernc.org/token v1.0.1 // indirect
 )
