@@ -1,12 +1,13 @@
 defaultFilter: &defaultFilter
   enable: true
   rules:
-    # default allow all packets
+    # all packets are allowed by default
     - allow:*
-    # except:
+    # except for the following rules
     - block:WindSeedClientNotify
     - block:PlayerLuaShellNotify
 
+loggingDir: log
 baseDomain: example.com
 autoSignUp: true
 passSignIn: false

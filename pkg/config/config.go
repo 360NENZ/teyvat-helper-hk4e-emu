@@ -2,18 +2,19 @@ package config
 
 import (
 	"fmt"
+	"github.com/rs/zerolog"
 	"io"
 	"os"
 	"path"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type Config struct {
+	LoggingDir string             `mapstructure:"loggingDir"`
 	BaseDomain string             `mapstructure:"baseDomain"`
 	AutoSignUp bool               `mapstructure:"autoSignUp"`
 	PassSignIn bool               `mapstructure:"passSignIn"`
@@ -60,6 +61,7 @@ type DatabaseConfig struct {
 }
 
 var DefaultConfig = Config{
+	LoggingDir: "log",
 	BaseDomain: "example.com",
 	AutoSignUp: true,
 	PassSignIn: false,
@@ -95,22 +97,10 @@ var DefaultConfig = Config{
 	},
 }
 
-func init() {
-	log.Logger = log.Output(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, newRollingFile())).With().Caller().Logger()
-}
+func LoadConfig() (cfg Config) { return LoadConfigName("config") }
 
-func newRollingFile() io.Writer {
-	if err := os.MkdirAll("log", 0744); err != nil {
-		log.Error().Err(err).Str("path", "log").Msg("can't create log directory")
-		return nil
-	}
-	return &lumberjack.Logger{
-		Filename: path.Join("log", fmt.Sprintf("hk4e-emu-%s.log", time.Now().Format("2006-01-02-15-04-05"))),
-	}
-}
-
-func LoadConfig() (cfg Config) {
-	viper.SetConfigName("config")
+func LoadConfigName(name string) (cfg Config) {
+	viper.SetConfigName(name)
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath("/etc/hk4e-emu")
 	viper.AddConfigPath("$HOME/.hk4e-emu")
@@ -119,6 +109,7 @@ func LoadConfig() (cfg Config) {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Warn().Msg("Config file not found, using the default config")
 			cfg = DefaultConfig
+			initLogger(cfg.LoggingDir)
 			return
 		} else {
 			log.Panic().Err(err).Msg("Failed to read config file")
@@ -135,5 +126,24 @@ func LoadConfig() (cfg Config) {
 			tls.KeyFile = "data/tls_key.pem"
 		}
 	}
+	initLogger(cfg.LoggingDir)
 	return
+}
+
+func initLogger(dir string) {
+	if dir != "" {
+		log.Logger = log.Output(io.MultiWriter(zerolog.ConsoleWriter{Out: os.Stderr}, newRollingFile(dir))).With().Caller().Logger()
+	} else {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).With().Caller().Logger()
+	}
+}
+
+func newRollingFile(dir string) io.Writer {
+	if err := os.MkdirAll(dir, 0744); err != nil {
+		log.Error().Err(err).Str("path", "log").Msg("can't create log directory")
+		return nil
+	}
+	return &lumberjack.Logger{
+		Filename: path.Join(dir, fmt.Sprintf("hk4e-emu-%s.log", time.Now().Format("2006-01-02"))),
+	}
 }

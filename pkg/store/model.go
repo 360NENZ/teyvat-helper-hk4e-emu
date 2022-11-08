@@ -65,7 +65,7 @@ type BlockData struct {
 	ID       int64  `bun:",pk,autoincrement"`
 	PlayerID int32  `bun:",notnull"`
 	BlockID  int32  `bun:",notnull"`
-	BinData  []byte `bun:"mediumblob,nullzero"`
+	BinData  []byte `bun:"type:mediumblob,nullzero"`
 	Version  int32  `bun:",notnull"`
 
 	Timestamp
@@ -75,7 +75,7 @@ type HomeData struct {
 	bun.BaseModel `bun:"table:hk4e_home_data"`
 
 	ID      int32  `bun:",pk,autoincrement"`
-	BinData []byte `bun:"mediumblob,nullzero"`
+	BinData []byte `bun:"type:mediumblob,nullzero"`
 	Version int32  `bun:",notnull"`
 
 	Timestamp
@@ -85,7 +85,7 @@ type PlayerData struct {
 	bun.BaseModel `bun:"table:hk4e_player_data"`
 
 	ID      int32  `bun:",pk,autoincrement"`
-	BinData []byte `bun:"mediumblob,nullzero"`
+	BinData []byte `bun:"type:mediumblob,nullzero"`
 	Version int32  `bun:",notnull"`
 
 	Timestamp

@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// handle GetPlayerTokenReq
+// HandleGetPlayerTokenReq handle GetPlayerTokenReq
 //
 //	flow:
 //		RECV <·· GetPlayerTokenReq

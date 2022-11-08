@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -89,7 +90,7 @@ func (s *Server) LoadSecret() error {
 	if err != nil {
 		return err
 	}
-	seed, err := strconv.ParseUint(string(b), 10, 64)
+	seed, err := strconv.ParseUint(strings.TrimSpace(string(b)), 10, 64)
 	if err != nil {
 		return err
 	}
