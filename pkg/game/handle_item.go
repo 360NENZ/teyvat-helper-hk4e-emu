@@ -1,6 +1,6 @@
 package game
 
-import "github.com/teyvat-helper/hk4e-proto/pb"
+import "github.com/qinastar/hk4e-proto/pb"
 
 // send PlayerStoreNotify
 //

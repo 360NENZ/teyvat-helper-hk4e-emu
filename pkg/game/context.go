@@ -8,7 +8,7 @@ import (
 
 	"github.com/aj3423/aproto"
 	"github.com/rs/zerolog/log"
-	"github.com/teyvat-helper/hk4e-proto/pb"
+	"github.com/qinastar/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/teyvat-helper/hk4e-emu/pkg/config"
+	"github.com/qinastar/hk4e-emu/pkg/config"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/sqlitedialect"
 	"github.com/uptrace/bun/driver/sqliteshim"

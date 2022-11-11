@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/teyvat-helper/hk4e-emu/pkg/config"
-	"github.com/teyvat-helper/hk4e-emu/pkg/game"
-	"github.com/teyvat-helper/hk4e-emu/pkg/http"
+	"github.com/qinastar/hk4e-emu/pkg/config"
+	"github.com/qinastar/hk4e-emu/pkg/game"
+	"github.com/qinastar/hk4e-emu/pkg/http"
 )
 
 func main() {

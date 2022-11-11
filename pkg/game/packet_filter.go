@@ -4,8 +4,8 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
-	"github.com/teyvat-helper/hk4e-emu/pkg/config"
-	"github.com/teyvat-helper/hk4e-proto/pb"
+	"github.com/qinastar/hk4e-emu/pkg/config"
+	"github.com/qinastar/hk4e-proto/pb"
 )
 
 type PacketFilter struct {

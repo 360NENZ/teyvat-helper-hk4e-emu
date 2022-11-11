@@ -1,6 +1,6 @@
 package game
 
-import "github.com/teyvat-helper/hk4e-proto/pb"
+import "github.com/qinastar/hk4e-proto/pb"
 
 func (s *Server) SendKeepAliveNotify(ctx *Context) error {
 	panic("not implement")

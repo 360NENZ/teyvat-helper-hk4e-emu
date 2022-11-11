@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/teyvat-helper/hk4e-proto/pb"
+	"github.com/qinastar/hk4e-proto/pb"
 )
 
 type PlayerAvatar struct {

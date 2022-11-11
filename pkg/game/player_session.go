@@ -7,9 +7,9 @@ import (
 	"encoding/hex"
 
 	"github.com/rs/zerolog/log"
-	"github.com/teyvat-helper/hk4e-emu/pkg/net"
-	"github.com/teyvat-helper/hk4e-emu/pkg/store"
-	"github.com/teyvat-helper/hk4e-proto/pb"
+	"github.com/qinastar/hk4e-emu/pkg/net"
+	"github.com/qinastar/hk4e-emu/pkg/store"
+	"github.com/qinastar/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 
