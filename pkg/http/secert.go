@@ -7,7 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/qinastar/hk4e-emu/pkg/ec2b"
+	"github.com/teyvat-helper/hk4e-emu/pkg/ec2b"
 )
 
 type Secret struct {

@@ -1,7 +1,7 @@
 package game
 
 import (
-	"github.com/qinastar/hk4e-proto/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 func getAvatarEntityInfo(player *Player, avatar *pb.AvatarBin) *pb.SceneEntityInfo {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/qinastar/hk4e-emu/pkg/sdk"
-	"github.com/qinastar/hk4e-emu/pkg/store"
+	"github.com/teyvat-helper/hk4e-emu/pkg/sdk"
+	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
 func (s *PlayerSession) TokenLogin(ctx context.Context, id int64, token string) (*Player, error) {

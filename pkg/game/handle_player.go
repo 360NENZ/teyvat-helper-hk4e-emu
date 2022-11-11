@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/qinastar/hk4e-proto/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 	"google.golang.org/protobuf/proto"
 )
 

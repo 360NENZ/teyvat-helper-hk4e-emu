@@ -1,4 +1,4 @@
-module github.com/qinastar/hk4e-emu
+module github.com/teyvat-helper/hk4e-emu
 
 go 1.19
 
@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.8.1
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/viper v1.14.0
-	github.com/qinastar/hk4e-proto v1.0.0
+	github.com/teyvat-helper/hk4e-proto v1.0.0
 	github.com/uptrace/bun v1.1.8
 	github.com/uptrace/bun/dialect/sqlitedialect v1.1.8
 	github.com/uptrace/bun/driver/sqliteshim v1.1.8

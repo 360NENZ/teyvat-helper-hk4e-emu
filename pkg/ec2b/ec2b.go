@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/qinastar/hk4e-emu/pkg/mt19937"
+	"github.com/teyvat-helper/hk4e-emu/pkg/mt19937"
 )
 
 type Ec2b struct {

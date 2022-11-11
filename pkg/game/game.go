@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/rs/zerolog/log"
-	"github.com/qinastar/hk4e-emu/pkg/config"
-	"github.com/qinastar/hk4e-emu/pkg/http"
-	"github.com/qinastar/hk4e-emu/pkg/net"
-	"github.com/qinastar/hk4e-emu/pkg/store"
+	"github.com/teyvat-helper/hk4e-emu/pkg/config"
+	"github.com/teyvat-helper/hk4e-emu/pkg/http"
+	"github.com/teyvat-helper/hk4e-emu/pkg/net"
+	"github.com/teyvat-helper/hk4e-emu/pkg/store"
 )
 
 type Server struct {

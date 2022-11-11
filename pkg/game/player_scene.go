@@ -3,7 +3,7 @@ package game
 import (
 	"sync"
 
-	"github.com/qinastar/hk4e-proto/pb"
+	"github.com/teyvat-helper/hk4e-proto/pb"
 )
 
 type PlayerScene struct {
