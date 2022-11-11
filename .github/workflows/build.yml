@@ -94,3 +94,4 @@ jobs:
         with:
           name: hke4-emu_${{ matrix.goos }}_${{ matrix.goarch }}.zip
           path: hke4-emu_${{ matrix.goos }}_${{ matrix.goarch }}.zip
+          
